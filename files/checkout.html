@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOLE — Premium Footwear Pakistan</title>
+  <meta name="description"
+    content="SOLE — Premium footwear for men and women. Shop the latest sneakers, heels, sandals and more. Fast delivery across Pakistan.">
+  <meta name="keywords"
+    content="shoes Pakistan, sneakers Pakistan, footwear online, buy shoes online Pakistan, SOLE shoes">
+  <meta name="theme-color" content="#2563eb">
+  <meta property="og:title" content="SOLE — Premium Footwear">
+  <meta property="og:description"
+    content="Premium footwear crafted for those who move through the world with intention. Shop now.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://sole-5fa90.web.app/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👟</text></svg>">
+  <link rel="canonical" href="https://sole-5fa90.web.app/">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="checkout.css">
+</head>
+
+<body>
+
+  <!-- TRUST STRIP -->
+  <div id="free-delivery-bar" class="free-delivery-bar">✅ Cash on Delivery · Free Returns in 7 days · WhatsApp Support</div>
+
+  <!-- NAV -->
+  <nav class="site-nav">
+    <!-- LEFT links -->
+    <ul class="nav-left">
+      <li><a href="store.html" class="nav-link">Shop</a></li>
+      <li><a href="#order" class="nav-link">Order</a></li>
+      <li><a href="#" class="nav-link" onclick="openTrack();return false;">Track</a></li>
+    </ul>
+
+    <!-- CENTER logo -->
+    <a href="store.html" class="logo">SOLE</a>
+
+    <!-- RIGHT actions -->
+    <ul class="nav-right">
+      <li>
+        <a href="#" class="nav-link nav-wishlist" onclick="openWishlist();return false;">
+          <span class="nav-icon">♡</span>
+          <span class="nav-label">Wishlist</span>
+          <span class="wishlist-count-badge" id="wishlist-badge" style="display:none">0</span>
+        </a>
+      </li>
+      <li><a id="wa-nav-btn" class="nav-wa-btn" href="#" target="_blank">💬</a></li>
+    </ul>
+  </nav>
+
+  <!-- MOBILE BOTTOM TAB BAR (CSS-only show/hide) -->
+  <div class="mob-tabbar">
+    <a href="store.html" class="mob-tab">
+      <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18l-2 10H5L3 7z"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+      <span class="mob-tab-label">Shop</span>
+    </a>
+    <a href="#order" class="mob-tab">
+      <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M3 3h2l1.5 11h11.5l2-8H7"/></svg></span>
+      <span class="mob-tab-label">Cart</span>
+      <span class="mob-tab-badge" id="mob-cart-count" style="display:none">0</span>
+    </a>
+    <a href="#" class="mob-tab" onclick="openWishlist();return false;">
+      <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5l-1.1-1C5.5 14.8 2 11.6 2 7.5 2 5 4 3 6.5 3c1.7 0 3.3.9 4 2.2.7-1.3 2.3-2.2 4-2.2C17 3 19 5 19 7.5c0 4.1-3.5 7.3-8.9 11.9L12 20.5z"/></svg></span>
+      <span class="mob-tab-label">Wishlist</span>
+      <span class="mob-tab-badge" id="mob-wish-count" style="display:none">0</span>
+    </a>
+    <a href="#" class="mob-tab" onclick="openTrack();return false;">
+      <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/><path d="M9 12l2 2 4-4"/></svg></span>
+      <span class="mob-tab-label">Track</span>
+    </a>
+    <a id="mob-wa-btn" href="#" target="_blank" class="mob-tab">
+      <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5z"/></svg></span>
+      <span class="mob-tab-label">Chat</span>
+    </a>
+  </div>
+
+
+    <!-- CART + CHECKOUT -->
+  <div class="checkout-split" id="order">
+    <!-- LEFT COLUMN: Forms -->
+    <div class="checkout-left">
+      <!-- Contact -->
+      <div class="checkout-section">
+        <div class="checkout-section-header">
+          <h2>Contact</h2>
+          <a href="#" class="checkout-login-link" onclick="openAdmin();return false;">Sign in</a>
+        </div>
+        <div class="form-group floating-label">
+          <input type="email" id="email" class="checkout-input" placeholder=" " oninput="validateField(this,'email')">
+          <label>Email or mobile phone number</label>
+        </div>
+        <div class="checkout-checkbox">
+          <input type="checkbox" id="news-offers" checked>
+          <label for="news-offers">Email me with news and offers</label>
+        </div>
+      </div>
+
+      <!-- Delivery -->
+      <div class="checkout-section">
+        <h2>Delivery</h2>
+        <div class="form-group floating-label" style="margin-bottom:1rem">
+          <select id="country" class="checkout-select">
+            <option>Pakistan</option>
+          </select>
+          <label class="select-label">Country/Region</label>
+        </div>
+        <div class="checkout-row">
+          <div class="form-group floating-label">
+            <input type="text" id="fname" class="checkout-input" placeholder=" " oninput="validateField(this,'name')">
+            <label>First name</label>
+          </div>
+          <div class="form-group floating-label">
+            <input type="text" id="lname" class="checkout-input" placeholder=" " oninput="validateField(this,'name')">
+            <label>Last name</label>
+          </div>
+        </div>
+        <div class="form-group floating-label">
+          <input type="text" id="address" class="checkout-input" placeholder=" ">
+          <label>Address</label>
+        </div>
+        <div class="form-group floating-label">
+          <input type="text" id="apartment" class="checkout-input" placeholder=" ">
+          <label>Apartment, suite, etc. (optional)</label>
+        </div>
+        <div class="checkout-row">
+          <div class="form-group floating-label">
+            <input type="text" id="city" class="checkout-input" placeholder=" ">
+            <label>City</label>
+          </div>
+          <div class="form-group floating-label">
+            <input type="text" id="postal" class="checkout-input" placeholder=" ">
+            <label>Postal code (optional)</label>
+          </div>
+        </div>
+        <div class="form-group floating-label">
+          <input type="tel" id="phone" class="checkout-input" placeholder=" ">
+          <label>Phone</label>
+          <span class="input-icon">❓</span>
+        </div>
+        <div class="checkout-checkbox" style="margin-top:0.8rem">
+          <input type="checkbox" id="save-info">
+          <label for="save-info">Save this information for next time</label>
+        </div>
+      </div>
+
+      <!-- Shipping Method -->
+      <div class="checkout-section">
+        <h2>Shipping method</h2>
+        <div class="shipping-box">
+          <span>Shipping</span>
+          <strong id="shipping-method-val">Rs 199.00</strong>
+        </div>
+      </div>
+
+      <!-- Payment -->
+      <div class="checkout-section">
+        <h2>Payment</h2>
+        <p class="checkout-sub">All transactions are secure and encrypted.</p>
+        
+        <div class="payment-methods-list">
+          <!-- COD -->
+          <div class="payment-method-item">
+            <label class="payment-label">
+              <input type="radio" name="payment_method" value="cod" checked onchange="selectPayment('cod')">
+              <span class="payment-name">Cash on Delivery (COD)</span>
+              <div class="payment-logos"><span style="font-size:1.2rem">💵</span></div>
+            </label>
+            <div id="pay-detail-cod" class="payment-detail-box" style="display:block">
+              <p>No payment needed now. Our delivery agent will collect the full amount when your order arrives at your door.</p>
+            </div>
+          </div>
+          
+          <!-- EASYPAISA -->
+          <div class="payment-method-item">
+            <label class="payment-label">
+              <input type="radio" name="payment_method" value="easypaisa" onchange="selectPayment('easypaisa')">
+              <span class="payment-name">Easypaisa</span>
+              <div class="payment-logos"><span style="font-size:1.2rem">📱</span></div>
+            </label>
+            <div id="pay-detail-easypaisa" class="payment-detail-box" style="display:none">
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Account Name</span><span>SOLE Store</span></div>
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:1rem"><span>Mobile Number</span><button type="button" class="copy-val" onclick="copyText('0300-1234567',this)" style="border:none;background:none;color:var(--accent);cursor:pointer">0300-1234567 📋</button></div>
+              <p class="pay-note" style="margin-bottom:1rem;font-size:.8rem">Send the exact order amount. Attach your payment screenshot below.</p>
+              
+              <div class="ss-upload-wrap"><span class="ss-upload-label">📸 Payment Screenshot <span style="color:var(--red)">*</span></span>
+                <div class="ss-drop-zone" id="ss-zone-easypaisa" onclick="document.getElementById('ss-file-easypaisa').click()" ondragover="ssDragOver(event,'easypaisa')" ondragleave="ssDragLeave('easypaisa')" ondrop="ssDrop(event,'easypaisa')">
+                  <div class="ss-drop-idle" id="ss-idle-easypaisa"><span class="ss-drop-icon">🖼️</span>
+                    <div class="ss-drop-text"><strong>Attach Screenshot</strong>Click or drag &amp; drop</div>
+                  </div>
+                  <div class="ss-preview-wrap" id="ss-preview-easypaisa"><img class="ss-preview-img" id="ss-img-easypaisa" src="" alt="screenshot" onclick="openSsLightbox(event,'easypaisa')">
+                    <div class="ss-preview-info"><strong id="ss-name-easypaisa"></strong><span id="ss-size-easypaisa"></span></div><button class="ss-remove-btn" onclick="removeSs(event,'easypaisa')">✕ Remove</button>
+                  </div>
+                </div><input type="file" id="ss-file-easypaisa" accept="image/*" style="display:none" onchange="ssFileSelect(this,'easypaisa')">
+              </div>
+            </div>
+          </div>
+
+          <!-- SADAPAY -->
+          <div class="payment-method-item">
+            <label class="payment-label">
+              <input type="radio" name="payment_method" value="sadapay" onchange="selectPayment('sadapay')">
+              <span class="payment-name">SadaPay</span>
+              <div class="payment-logos"><span style="font-size:1.2rem">💜</span></div>
+            </label>
+            <div id="pay-detail-sadapay" class="payment-detail-box" style="display:none">
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Account Name</span><span>SOLE Store</span></div>
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:1rem"><span>SadaPay Number</span><button type="button" class="copy-val" onclick="copyText('0311-1234567',this)" style="border:none;background:none;color:var(--accent);cursor:pointer">0311-1234567 📋</button></div>
+              <p class="pay-note" style="margin-bottom:1rem;font-size:.8rem">Send the exact order amount via SadaPay. Attach your screenshot.</p>
+              
+              <div class="ss-upload-wrap"><span class="ss-upload-label">📸 Payment Screenshot <span style="color:var(--red)">*</span></span>
+                <div class="ss-drop-zone" id="ss-zone-sadapay" onclick="document.getElementById('ss-file-sadapay').click()" ondragover="ssDragOver(event,'sadapay')" ondragleave="ssDragLeave('sadapay')" ondrop="ssDrop(event,'sadapay')">
+                  <div class="ss-drop-idle" id="ss-idle-sadapay"><span class="ss-drop-icon">🖼️</span>
+                    <div class="ss-drop-text"><strong>Attach Screenshot</strong>Click or drag &amp; drop</div>
+                  </div>
+                  <div class="ss-preview-wrap" id="ss-preview-sadapay"><img class="ss-preview-img" id="ss-img-sadapay" src="" alt="screenshot" onclick="openSsLightbox(event,'sadapay')">
+                    <div class="ss-preview-info"><strong id="ss-name-sadapay"></strong><span id="ss-size-sadapay"></span></div><button class="ss-remove-btn" onclick="removeSs(event,'sadapay')">✕ Remove</button>
+                  </div>
+                </div><input type="file" id="ss-file-sadapay" accept="image/*" style="display:none" onchange="ssFileSelect(this,'sadapay')">
+              </div>
+            </div>
+          </div>
+
+          <!-- PAYONEER -->
+          <div class="payment-method-item">
+            <label class="payment-label">
+              <input type="radio" name="payment_method" value="payoneer" onchange="selectPayment('payoneer')">
+              <span class="payment-name">Payoneer</span>
+              <div class="payment-logos"><span style="font-size:1.2rem">🌐</span></div>
+            </label>
+            <div id="pay-detail-payoneer" class="payment-detail-box" style="display:none">
+              <p class="pay-note" style="margin-bottom:1rem">Click below to pay via Payoneer. After payment, attach your confirmation screenshot.</p>
+              <button type="button" class="payoneer-pay-btn" onclick="openPayoneerCheckout()" style="width:100%;margin-bottom:1rem;background:var(--accent);color:#fff;padding:.8rem;border:none;border-radius:5px;cursor:pointer">🌐 Pay via Payoneer →</button>
+              
+              <div class="ss-upload-wrap"><span class="ss-upload-label">📸 Payment Screenshot <span style="color:var(--red)">*</span></span>
+                <div class="ss-drop-zone" id="ss-zone-payoneer" onclick="document.getElementById('ss-file-payoneer').click()" ondragover="ssDragOver(event,'payoneer')" ondragleave="ssDragLeave('payoneer')" ondrop="ssDrop(event,'payoneer')">
+                  <div class="ss-drop-idle" id="ss-idle-payoneer"><span class="ss-drop-icon">🖼️</span>
+                    <div class="ss-drop-text"><strong>Attach Payoneer Receipt</strong></div>
+                  </div>
+                  <div class="ss-preview-wrap" id="ss-preview-payoneer"><img class="ss-preview-img" id="ss-img-payoneer" src="" alt="screenshot" onclick="openSsLightbox(event,'payoneer')">
+                    <div class="ss-preview-info"><strong id="ss-name-payoneer"></strong><span id="ss-size-payoneer"></span></div><button class="ss-remove-btn" onclick="removeSs(event,'payoneer')">✕ Remove</button>
+                  </div>
+                </div><input type="file" id="ss-file-payoneer" accept="image/*" style="display:none" onchange="ssFileSelect(this,'payoneer')">
+              </div>
+            </div>
+          </div>
+
+          <!-- BANK TRANSFER -->
+          <div class="payment-method-item">
+            <label class="payment-label">
+              <input type="radio" name="payment_method" value="bank" onchange="selectPayment('bank')">
+              <span class="payment-name">Bank Transfer</span>
+              <div class="payment-logos"><span style="font-size:1.2rem">🏦</span></div>
+            </label>
+            <div id="pay-detail-bank" class="payment-detail-box" style="display:none">
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Account Name</span><span>SOLE Store</span></div>
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:.5rem"><span>Account Number</span><button type="button" class="copy-val" onclick="copyText('PK12XYZB000123456789',this)" style="border:none;background:none;color:var(--accent);cursor:pointer">PK12XYZB000123456789 📋</button></div>
+              <div class="pay-info-row" style="display:flex;justify-content:space-between;margin-bottom:1rem"><span>Bank Name</span><span>XYZ Bank Ltd.</span></div>
+              <p class="pay-note" style="margin-bottom:1rem;font-size:.8rem">Please transfer the exact amount and attach your receipt/screenshot.</p>
+              
+              <div class="ss-upload-wrap"><span class="ss-upload-label">📸 Payment Screenshot <span style="color:var(--red)">*</span></span>
+                <div class="ss-drop-zone" id="ss-zone-bank" onclick="document.getElementById('ss-file-bank').click()" ondragover="ssDragOver(event,'bank')" ondragleave="ssDragLeave('bank')" ondrop="ssDrop(event,'bank')">
+                  <div class="ss-drop-idle" id="ss-idle-bank"><span class="ss-drop-icon">🖼️</span>
+                    <div class="ss-drop-text"><strong>Attach Screenshot</strong>Click or drag &amp; drop</div>
+                  </div>
+                  <div class="ss-preview-wrap" id="ss-preview-bank"><img class="ss-preview-img" id="ss-img-bank" src="" alt="screenshot" onclick="openSsLightbox(event,'bank')">
+                    <div class="ss-preview-info"><strong id="ss-name-bank"></strong><span id="ss-size-bank"></span></div><button class="ss-remove-btn" onclick="removeSs(event,'bank')">✕ Remove</button>
+                  </div>
+                </div><input type="file" id="ss-file-bank" accept="image/*" style="display:none" onchange="ssFileSelect(this,'bank')">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Billing Address -->
+      <div class="checkout-section">
+        <h2>Billing address</h2>
+        <div class="billing-methods-list">
+          <div class="billing-method-item">
+            <label class="payment-label">
+              <input type="radio" name="billing_address" value="same" checked>
+              <span class="payment-name">Same as shipping address</span>
+            </label>
+          </div>
+          <div class="billing-method-item">
+            <label class="payment-label">
+              <input type="radio" name="billing_address" value="different">
+              <span class="payment-name">Use a different billing address</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button class="checkout-submit-btn" id="checkout-submit-btn" onclick="placeOrder()">Complete order</button>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Order Summary -->
+    <div class="checkout-right">
+      <div class="order-summary-items" id="cart-items-summary">
+         <!-- items go here -->
+      </div>
+      
+      <div class="coupon-section-modern">
+        <input class="checkout-input" id="coupon-input" type="text" placeholder="Discount code">
+        <button class="coupon-apply-btn-modern" onclick="applyCoupon()">Apply</button>
+      </div>
+      <div id="coupon-hint" style="font-size:.8rem; margin-top:.4rem;"></div>
+      <div id="coupon-remove-btn" style="display:none; font-size:.8rem; color:var(--red); cursor:pointer; margin-top:.4rem;" onclick="removeCoupon()">✕ Remove Discount</div>
+
+      <div class="summary-totals">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal-val">Rs 0.00</span>
+        </div>
+        <div class="summary-row cart-discount-row" id="cart-discount-row" style="display:none">
+          <span id="cart-discount-label">Discount</span>
+          <span id="cart-discount-val" style="font-weight:500">- Rs 0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span id="cart-delivery-val2">Rs 199.00</span>
+        </div>
+        <div class="summary-total-row">
+          <span class="tot-label">Total</span>
+          <span class="tot-val"><span class="currency-code">PKR</span> <span id="cart-grand-total-val">Rs 0.00</span></span>
+        </div>
+        <div style="font-size:0.75rem; color:#737373; margin-top:0.5rem">Including taxes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER CONFIRMATION PAGE -->
+  <div class="order-conf-overlay" id="order-conf">
+    <div class="order-conf-wrap">
+      <div class="order-conf-top">
+        <span class="order-conf-icon">🎉</span>
+        <div class="order-conf-title">Order Confirmed!</div>
+        <p class="order-conf-sub" id="conf-sub-msg">Thank you for your order. Here's your receipt.</p>
+        <div class="order-conf-id" id="conf-order-id">ORD-XXXXXXX</div>
+      </div>
+
+      <!-- COD note — shown only for COD orders -->
+      <div class="order-conf-cod-note" id="conf-cod-note" style="display:none">
+        💵 <strong>Cash on Delivery:</strong> Our team will contact you within 24 hours to confirm your order before dispatch. Please keep your phone reachable.
+      </div>
+
+      <!-- Items -->
+      <div class="order-conf-card">
+        <div class="order-conf-card-title">Items Ordered</div>
+        <div class="order-conf-items" id="conf-items"></div>
+        <div class="order-conf-totals" id="conf-totals"></div>
+      </div>
+
+      <!-- Order info grid -->
+      <div class="order-conf-card">
+        <div class="order-conf-card-title">Order Details</div>
+        <div class="order-conf-info-grid" id="conf-info-grid"></div>
+      </div>
+
+      <!-- What happens next -->
+      <div class="order-conf-card">
+        <div class="order-conf-card-title">What Happens Next</div>
+        <div class="order-conf-steps" id="conf-steps"></div>
+      </div>
+
+      <div class="order-conf-actions">
+        <button class="order-conf-print-btn" onclick="window.print()">🖨️ Print Receipt</button>
+        <button class="btn-primary" onclick="closeOrderConf()">Continue Shopping</button>
+      </div>
+
+      <div style="margin-top:1rem" id="conf-wa-wrap" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- DB STATUS BAR -->
+  <div id="db-status-bar" class="unconfigured" style="display: none !important;">
+    <span class="db-dot"></span>
+    <span id="db-status-text">Connecting...</span>
+  </div>
+
+  <script src="checkout.js"></script>
+</body>
+</html>

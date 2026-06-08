@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLE — Premium Footwear Pakistan</title>
+    <meta name="description"
+        content="SOLE — Premium footwear for men and women. Shop the latest sneakers, heels, sandals and more. Fast delivery across Pakistan.">
+    <meta name="keywords"
+        content="shoes Pakistan, sneakers Pakistan, footwear online, buy shoes online Pakistan, SOLE shoes">
+    <meta name="theme-color" content="#2563eb">
+    <meta property="og:title" content="SOLE — Premium Footwear">
+    <meta property="og:description"
+        content="Premium footwear crafted for those who move through the world with intention. Shop now.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://sole-5fa90.web.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👟</text></svg>">
+    <link rel="canonical" href="https://sole-5fa90.web.app/">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+        rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+    <link rel="stylesheet" href="shared.css">
+
+</head>
+
+<body>
+
+    <!-- TRUST STRIP (hidden via CSS on store) -->
+    <div id="free-delivery-bar" class="free-delivery-bar">✅ Cash on Delivery · Free Returns in 7 days · WhatsApp Support
+    </div>
+
+    <!-- NAV -->
+    <nav class="site-nav">
+        <a href="#" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">SOLE</a>
+        
+        <div class="nav-search-bar">
+            <div class="search-bar-inner">
+                <svg class="search-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input class="store-search" type="text" id="store-search"
+                    placeholder="Search for a shoe..." oninput="handleSearch()">
+                <button class="search-clear-x" id="search-clear-x" onclick="clearSearch()" aria-label="Clear search">✕</button>
+            </div>
+            <!-- Hidden: kept so existing JS refs don't break -->
+            <select class="search-sort" id="search-sort" style="display:none"><option value="default">Sort: Default</option></select>
+            <button class="search-clear-btn" id="search-clear-btn" style="display:none"></button>
+        </div>
+
+        <ul class="nav-right">
+            <li>
+                <a href="#" class="nav-link nav-wishlist" onclick="openWishlist();return false;">
+                    <span class="nav-icon">♡</span>
+                    <span class="nav-label">Wishlist</span>
+                    <span class="wishlist-count-badge" id="wishlist-badge" style="display:none">0</span>
+                </a>
+            </li>
+            <li>
+                <a id="wa-nav-btn" class="nav-icon-btn" href="#" target="_blank" rel="noopener" title="Chat">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5z" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="checkout.html" class="nav-icon-btn" title="Cart">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="9" cy="20" r="1" />
+                        <circle cx="18" cy="20" r="1" />
+                        <path d="M3 3h2l1.5 11h11.5l2-8H7" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- MOBILE BOTTOM TAB BAR (CSS-only show/hide) -->
+    <div class="mob-tabbar">
+        <a href="#products" class="mob-tab">
+            <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M3 7h18l-2 10H5L3 7z" />
+                    <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg></span>
+            <span class="mob-tab-label">Shop</span>
+        </a>
+        <a href="checkout.html" class="mob-tab">
+            <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="9" cy="20" r="1" />
+                    <circle cx="18" cy="20" r="1" />
+                    <path d="M3 3h2l1.5 11h11.5l2-8H7" />
+                </svg></span>
+            <span class="mob-tab-label">Cart</span>
+            <span class="mob-tab-badge" id="mob-cart-count" style="display:none">0</span>
+        </a>
+        <a href="#" class="mob-tab" onclick="openWishlist();return false;">
+            <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M12 20.5l-1.1-1C5.5 14.8 2 11.6 2 7.5 2 5 4 3 6.5 3c1.7 0 3.3.9 4 2.2.7-1.3 2.3-2.2 4-2.2C17 3 19 5 19 7.5c0 4.1-3.5 7.3-8.9 11.9L12 20.5z" />
+                </svg></span>
+            <span class="mob-tab-label">Wishlist</span>
+            <span class="mob-tab-badge" id="mob-wish-count" style="display:none">0</span>
+        </a>
+        <a href="#" class="mob-tab" onclick="openTrack();return false;">
+            <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 3l8 4v6c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z" />
+                    <path d="M9 12l2 2 4-4" />
+                </svg></span>
+            <span class="mob-tab-label">Track</span>
+        </a>
+        <a id="mob-wa-btn" href="#" target="_blank" class="mob-tab">
+            <span class="mob-tab-icon"><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 11.5a8.5 8.5 0 0 1-12.2 7.6L3 21l1.9-5.8A8.5 8.5 0 1 1 21 11.5z" />
+                </svg></span>
+            <span class="mob-tab-label">Chat</span>
+        </a>
+    </div>
+
+
+    <!-- HERO -->
+    <section class="hero pro-fade-in delay-1" id="home-hero">
+        <div class="hero-deco hero-deco-court" aria-hidden="true"></div>
+        <div class="hero-deco hero-deco-map" aria-hidden="true"></div>
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Step Different.</h1>
+                <p class="hero-sale-line">50% Off — <span class="hero-limited">Limited Time</span></p>
+                <p class="hero-tagline">Premium footwear for every step.</p>
+                <button type="button" class="btn-primary btn-hero"
+                    onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now <span
+                        aria-hidden="true">→</span></button>
+            </div>
+            <div class="hero-gallery">
+                <p class="hero-gallery-title">Explore Our Collection</p>
+                <div class="polaroid-stage" id="polaroid-stage" aria-roledescription="carousel">
+                    <div class="polaroid-stack" id="polaroid-stack">
+                        <div class="polaroid" data-pos="-2"><img src="" alt="" draggable="false"><span
+                                class="polaroid-caption"></span></div>
+                        <div class="polaroid" data-pos="-1"><img src="" alt="" draggable="false"><span
+                                class="polaroid-caption"></span></div>
+                        <div class="polaroid" data-pos="0"><img src="" alt="" draggable="false"><span
+                                class="polaroid-caption"></span></div>
+                        <div class="polaroid" data-pos="1"><img src="" alt="" draggable="false"><span
+                                class="polaroid-caption"></span></div>
+                        <div class="polaroid" data-pos="2"><img src="" alt="" draggable="false"><span
+                                class="polaroid-caption"></span></div>
+                    </div>
+                </div>
+                <div class="hero-dots" id="hero-dots" role="tablist" aria-label="Featured shoes"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SHOP / PRODUCTS -->
+    <section class="shop-section" id="products">
+        <div class="section-header dot-grid-bg">
+            <h2>Collection</h2>
+            <p id="product-count-label">Loading...</p>
+        </div>
+        <div id="category-bar" class="category-bar" style="display:none"></div>
+        <div class="search-results-info" id="search-results-info" style="display:none"></div>
+        <div class="product-grid" id="product-grid"></div>
+    </section>
+
+    <!-- ORDER SECTION REMOVED (now in checkout.html) -->
+    </div>
+
+
+    <!-- WHATSAPP FLOAT -->
+    <div class="wa-float">
+        <span class="wa-tooltip">Chat on WhatsApp</span>
+        <a class="wa-btn" id="wa-float-btn" href="#" target="_blank" rel="noopener" title="Chat on WhatsApp">💬</a>
+    </div>
+
+    <!-- ORDER TRACKING OVERLAY -->
+    <div class="track-overlay" id="track-overlay" onclick="if(event.target===this)closeTrack()">
+        <div class="track-modal">
+            <div class="track-header">
+                <h3>Track Your Order</h3>
+                <button class="track-close" onclick="closeTrack()">✕</button>
+            </div>
+            <div class="track-body">
+                <div class="track-tabs">
+                    <button class="track-tab active" onclick="switchTrackTab('id',this)">By Order ID</button>
+                    <button class="track-tab" onclick="switchTrackTab('email',this)">By Email</button>
+                </div>
+                <div id="track-tab-id">
+                    <div class="track-input-row">
+                        <input class="track-input" id="track-order-id" placeholder="e.g. ORD-ABC123XY"
+                            onkeydown="if(event.key==='Enter')trackById()">
+                        <button class="track-search-btn" onclick="trackById()">Track →</button>
+                    </div>
+                </div>
+                <div id="track-tab-email" style="display:none">
+                    <div class="track-input-row">
+                        <input class="track-input" type="email" id="track-email"
+                            placeholder="Email you used at checkout" onkeydown="if(event.key==='Enter')trackByEmail()">
+                        <button class="track-search-btn" onclick="trackByEmail()">Find →</button>
+                    </div>
+                </div>
+                <div class="track-result" id="track-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELIVERY SLIP MODAL -->
+    <div class="slip-overlay" id="slip-overlay" onclick="if(event.target===this)closeSlip()">
+        <div class="slip-modal">
+            <div class="slip-actions"><button class="slip-print-btn" onclick="printSlip()">🖨️ Print
+                    Slip</button><button class="slip-close-btn" onclick="closeSlip()">✕ Close</button></div>
+            <div class="slip-paper" id="slip-paper"></div>
+        </div>
+    </div>
+
+    <!-- SCREENSHOT LIGHTBOX -->
+    <div class="ss-lightbox" id="ss-lightbox" onclick="closeSsLightbox()">
+        <button class="ss-lightbox-close" onclick="closeSsLightbox()">✕</button>
+        <img id="ss-lightbox-img" src="" alt="Payment screenshot">
+    </div>
+
+    <!-- PRODUCT DETAIL MODAL -->
+    <div class="pdm-overlay" id="pdm-overlay" onclick="pdmClickOutside(event)">
+        <div class="pdm-modal" id="pdm-modal">
+            <button class="pdm-close-btn" onclick="closePdm()">✕</button>
+            <div class="pdm-gallery">
+                <div class="pdm-main-wrap" id="pdm-main-wrap"></div>
+                <div class="pdm-thumbs" id="pdm-thumbs"></div>
+            </div>
+            <div class="pdm-info" id="pdm-info"></div>
+        </div>
+    </div>
+
+
+    <!-- ORDER CONFIRMATION PAGE -->
+    <div class="order-conf-overlay" id="order-conf">
+        <div class="order-conf-wrap">
+            <div class="order-conf-top">
+                <span class="order-conf-icon">🎉</span>
+                <div class="order-conf-title">Order Confirmed!</div>
+                <p class="order-conf-sub" id="conf-sub-msg">Thank you for your order. Here's your receipt.</p>
+                <div class="order-conf-id" id="conf-order-id">ORD-XXXXXXX</div>
+            </div>
+
+            <!-- COD note — shown only for COD orders -->
+            <div class="order-conf-cod-note" id="conf-cod-note" style="display:none">
+                💵 <strong>Cash on Delivery:</strong> Our team will contact you within 24 hours to confirm your order
+                before
+                dispatch. Please keep your phone reachable.
+            </div>
+
+            <!-- Items -->
+            <div class="order-conf-card">
+                <div class="order-conf-card-title">Items Ordered</div>
+                <div class="order-conf-items" id="conf-items"></div>
+                <div class="order-conf-totals" id="conf-totals"></div>
+            </div>
+
+            <!-- Order info grid -->
+            <div class="order-conf-card">
+                <div class="order-conf-card-title">Order Details</div>
+                <div class="order-conf-info-grid" id="conf-info-grid"></div>
+            </div>
+
+            <!-- What happens next -->
+            <div class="order-conf-card">
+                <div class="order-conf-card-title">What Happens Next</div>
+                <div class="order-conf-steps" id="conf-steps"></div>
+            </div>
+
+            <div class="order-conf-actions">
+                <button class="order-conf-print-btn" onclick="window.print()">🖨️ Print Receipt</button>
+                <button class="btn-primary" onclick="closeOrderConf()">Continue Shopping</button>
+            </div>
+
+            <div style="margin-top:1rem" id="conf-wa-wrap" style="display:none"></div>
+        </div>
+    </div>
+
+    <!-- LEGACY SUCCESS COMPAT -->
+    <div id="success" class="success-overlay" style="display:none"></div>
+
+
+    <!-- RETURN POLICY MODAL -->
+    <div class="policy-overlay" id="policy-overlay" onclick="if(event.target===this)closePolicy()">
+        <div class="policy-modal">
+            <div class="policy-header">
+                <h3>Return &amp; Exchange Policy</h3>
+                <button class="policy-close" onclick="closePolicy()">✕</button>
+            </div>
+            <div class="policy-body" id="policy-body">
+                <h4>📦 Returns</h4>
+                <p>We accept returns within <strong>7 days</strong> of delivery. Items must be unused, in original
+                    packaging,
+                    with tags attached.</p>
+                <h4>🔄 Exchanges</h4>
+                <p>Size exchanges are accepted within <strong>14 days</strong>. Contact us on WhatsApp with your order
+                    ID and
+                    the size you need.</p>
+                <h4>🚫 Non-Returnable Items</h4>
+                <p>Sale items, customized orders, and items showing signs of wear cannot be returned.</p>
+                <h4>💸 Refunds</h4>
+                <p>Approved refunds are processed within 5–7 business days to your original payment method.</p>
+                <h4>📞 How to Initiate a Return</h4>
+                <p>WhatsApp us your order ID and photos of the issue. We'll guide you through the process within 24
+                    hours.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-brand">
+            <span class="logo">SOLE</span>
+            <p>Premium footwear crafted for those who move through the world with intention. Every step, a statement.
+            </p>
+        </div>
+        <div class="footer-col">
+            <h5>Shop</h5>
+            <a href="#products">All Shoes</a>
+            <a href="#" onclick="filterCategory('Men\'s');return false;">Men's</a>
+            <a href="#" onclick="filterCategory('Women\'s');return false;">Women's</a>
+            <a href="#" onclick="filterCategory('New Arrival');return false;">New Arrivals</a>
+        </div>
+        <div class="footer-col">
+            <h5>Help</h5>
+            <a href="#" onclick="openTrack();return false;">Track Order</a>
+            <a href="#" onclick="openPolicy();return false;">Return Policy</a>
+            <a id="footer-wa-link" href="#" target="_blank">WhatsApp Us</a>
+            <a href="#products" onclick="document.getElementById('store-search').focus()">Search</a>
+        </div>
+        <div class="footer-col footer-contact">
+            <h5>Contact</h5>
+            <p id="footer-phone">Order on WhatsApp</p>
+            <p id="footer-city">Pakistan</p>
+            <a id="footer-ig-link" href="https://instagram.com/" target="_blank" rel="noopener">Instagram</a>
+        </div>
+    </footer>
+    <div class="footer-bottom">
+        <span>© 2025 SOLE. All rights reserved.</span>
+        <span><a href="#" onclick="openPolicy();return false;" style="color:var(--muted);text-decoration:none">Return
+                Policy</a> · <a href="#" onclick="openTrack();return false;"
+                style="color:var(--muted);text-decoration:none">Track Order</a></span>
+    </div>
+
+
+    <!-- WISHLIST DRAWER -->
+    <div class="wishlist-overlay" id="wishlist-overlay" onclick="if(event.target===this)closeWishlist()">
+        <div class="wishlist-drawer">
+            <div class="wishlist-header">
+                <h3>♡ Wishlist</h3>
+                <button class="wishlist-close" onclick="closeWishlist()">✕</button>
+            </div>
+            <div id="wishlist-items"></div>
+        </div>
+    </div>
+
+    <!-- SIZE GUIDE MODAL -->
+    <div class="sizeguide-overlay" id="sizeguide-overlay" onclick="if(event.target===this)closeSizeGuide()">
+        <div class="sizeguide-modal">
+            <div class="sizeguide-header">
+                <h3>Size Guide</h3>
+                <button class="sizeguide-close" onclick="closeSizeGuide()">✕</button>
+            </div>
+            <div class="sizeguide-body">
+                <p style="color:var(--muted);font-size:.85rem;line-height:1.7">All SOLE shoes use standard <strong
+                        style="color:var(--text)">EU sizing</strong>. Use this chart to find your perfect fit. If you
+                    are between
+                    sizes, we recommend going up one size.</p>
+                <table class="sizeguide-table">
+                    <thead>
+                        <tr>
+                            <th>EU</th>
+                            <th>UK</th>
+                            <th>US (M)</th>
+                            <th>US (W)</th>
+                            <th>CM (foot length)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>35</td>
+                            <td>2.5</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>22.5</td>
+                        </tr>
+                        <tr>
+                            <td>36</td>
+                            <td>3</td>
+                            <td>4.5</td>
+                            <td>5.5</td>
+                            <td>23</td>
+                        </tr>
+                        <tr>
+                            <td>37</td>
+                            <td>4</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>23.5</td>
+                        </tr>
+                        <tr>
+                            <td>38</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>24</td>
+                        </tr>
+                        <tr>
+                            <td>39</td>
+                            <td>6</td>
+                            <td>7</td>
+                            <td>8</td>
+                            <td>25</td>
+                        </tr>
+                        <tr>
+                            <td>40</td>
+                            <td>6.5</td>
+                            <td>7.5</td>
+                            <td>8.5</td>
+                            <td>25.5</td>
+                        </tr>
+                        <tr>
+                            <td>41</td>
+                            <td>7</td>
+                            <td>8</td>
+                            <td>9</td>
+                            <td>26</td>
+                        </tr>
+                        <tr>
+                            <td>42</td>
+                            <td>8</td>
+                            <td>9</td>
+                            <td>10</td>
+                            <td>26.5</td>
+                        </tr>
+                        <tr>
+                            <td>43</td>
+                            <td>9</td>
+                            <td>10</td>
+                            <td>11</td>
+                            <td>27.5</td>
+                        </tr>
+                        <tr>
+                            <td>44</td>
+                            <td>9.5</td>
+                            <td>10.5</td>
+                            <td>11.5</td>
+                            <td>28</td>
+                        </tr>
+                        <tr>
+                            <td>45</td>
+                            <td>10</td>
+                            <td>11</td>
+                            <td>12</td>
+                            <td>28.5</td>
+                        </tr>
+                        <tr>
+                            <td>46</td>
+                            <td>11</td>
+                            <td>12</td>
+                            <td>13</td>
+                            <td>29.5</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top:1.2rem;font-size:.78rem;color:var(--muted)">💡 <strong
+                        style="color:var(--text)">How to
+                        measure:</strong> Stand on a piece of paper, trace your foot, measure from heel to longest toe.
+                    That
+                    measurement in cm is your size.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DB STATUS BAR -->
+    <div id="db-status-bar" class="unconfigured" style="display: none !important;">
+        <span class="db-dot"></span>
+        <span id="db-status-text">Connecting...</span>
+    </div>
+
+    <script src="store.js"></script>
+</body>
+</html>
