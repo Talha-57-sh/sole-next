@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SOLE — Admin Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
 <link rel="stylesheet" href="admin.css">
 </head>
 <body>
@@ -28,8 +28,8 @@
       <div class="login-error" id="login-error">Incorrect email or password.</div>
       <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In →</button>
     </div>
-    <div id="auth-setup-notice" style="display:none;margin-top:1.5rem;background:rgba(200,255,0,.06);border:1px solid rgba(200,255,0,.2);padding:1.2rem;max-width:380px;font-size:.82rem;line-height:1.8;color:var(--muted)">
-      <strong style="color:var(--accent)">⚙️ First-time setup</strong><br>
+    <div id="auth-setup-notice" style="display:none;margin-top:1.5rem;background:var(--accent-dim);border:1px solid var(--border);padding:1.2rem;max-width:380px;font-size:.82rem;line-height:1.8;color:var(--muted)">
+      <strong style="color:var(--accent)">First-time setup</strong><br>
       Firebase Auth not enabled yet. Go to:<br>
       <strong style="color:var(--text)">Firebase Console → Authentication → Get Started → Email/Password → Enable</strong>
     </div>
@@ -49,9 +49,11 @@
     </div>
 
     <div class="admin-tabs">
-      <button class="admin-tab active" onclick="switchTab('products',this)">📦 Products (<span id="tab-prod-count">0</span>)</button>
-      <button class="admin-tab" onclick="switchTab('orders',this)">📋 Orders <span class="tab-badge" id="tab-orders-badge">0</span></button>
-      <button class="admin-tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
+      <button class="admin-tab active" onclick="switchTab('products',this)">Products (<span id="tab-prod-count">0</span>)</button>
+      <button class="admin-tab" onclick="switchTab('orders',this)">Orders <span class="tab-badge" id="tab-orders-badge">0</span></button>
+      <button class="admin-tab" onclick="switchTab('reviews',this)">Reviews <span class="tab-badge" id="tab-reviews-badge">0</span></button>
+      <button class="admin-tab" onclick="switchTab('restock',this)">Restocks <span class="tab-badge" id="tab-restock-badge">0</span></button>
+      <button class="admin-tab" onclick="switchTab('settings',this)">Settings</button>
     </div>
 
     <div class="admin-body">
@@ -78,7 +80,7 @@
               </div>
               <input type="file" id="ap-img-file" accept="image/*" multiple style="display:none" onchange="handleMultiFileSelect(this)">
               <div class="url-fallback-toggle" onclick="toggleUrlInput()"><span id="url-toggle-label">🔗 Or paste an image URL instead</span></div>
-              <div id="url-input-wrap" style="display:none;margin-top:.5rem;display:flex;gap:.5rem;align-items:center;">
+              <div id="url-input-wrap" style="display:none;margin-top:.5rem;gap:.5rem;align-items:center;">
                 <input type="url" id="ap-img-url" placeholder="https://example.com/shoe.jpg" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;">
                 <button onclick="addUrlImage()" style="background:var(--accent);color:var(--on-accent);border:none;padding:.75rem 1.2rem;font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;white-space:nowrap;">Add URL</button>
               </div>
@@ -121,7 +123,26 @@
       <div class="tab-content" id="tab-settings">
 
         <div class="settings-card">
-          <div class="settings-card-title">🚚 Delivery Charges</div>
+          <div class="settings-card-title">Payment Details</div>
+          <p class="settings-desc">Account numbers shown to customers at checkout. Leave blank until you are ready to accept that payment method.</p>
+          <div class="admin-form-grid">
+            <div class="admin-input-group full"><label>Account Name (all methods)</label><input type="text" id="setting-account-name" placeholder="SOLE"></div>
+            <div class="admin-input-group"><label>Easypaisa Number</label><input type="text" id="setting-easypaisa" placeholder="03XX XXXXXXX"></div>
+            <div class="admin-input-group"><label>SadaPay Number</label><input type="text" id="setting-sadapay" placeholder="03XX XXXXXXX"></div>
+            <div class="admin-input-group"><label>Bank Name</label><input type="text" id="setting-bank-name" placeholder="Your bank"></div>
+            <div class="admin-input-group full"><label>Bank Account / IBAN</label><input type="text" id="setting-bank-account" placeholder="PKXX..."></div>
+            <div class="admin-input-group"><label>WhatsApp Number</label><input type="text" id="setting-wa-number" placeholder="923001234567"></div>
+            <div class="admin-input-group"><label>Store City</label><input type="text" id="setting-store-city" placeholder="Karachi"></div>
+            <div class="admin-input-group full"><label>Instagram URL</label><input type="url" id="setting-instagram" placeholder="https://instagram.com/yourstore"></div>
+          </div>
+          <div style="margin-top:1rem">
+            <button class="settings-save-btn" onclick="savePaymentSettings()">Save Payment &amp; Contact</button>
+          </div>
+          <div class="settings-hint" id="payment-settings-hint"></div>
+        </div>
+
+        <div class="settings-card">
+          <div class="settings-card-title">Delivery Charges</div>
           <p class="settings-desc">Set the flat delivery fee added to every order. Customers see this as a separate line item at checkout.</p>
           <div class="settings-row">
             <div class="admin-input-group" style="flex:1">
@@ -283,8 +304,28 @@ service cloud.firestore {
           </div>
         </div>
 
-      
-    </div>
+      </div>
+
+      <!-- REVIEWS TAB -->
+      <div class="tab-content" id="tab-reviews">
+        <div class="admin-section-title">Customer Reviews</div>
+        <p class="settings-desc">Approve reviews to make them visible on the product pages, or delete inappropriate ones.</p>
+        <div class="reviews-filter-row" style="display:flex;gap:1rem;margin-bottom:1.5rem;">
+          <select id="review-status-filter" onchange="renderReviews()" style="padding:.6rem 1rem;border:1px solid var(--border);border-radius:4px;">
+            <option value="pending">Pending Approval</option>
+            <option value="approved">Approved</option>
+            <option value="all">All Reviews</option>
+          </select>
+        </div>
+        <div id="admin-reviews-list" class="admin-reviews-grid" style="display:grid;gap:1rem;"></div>
+      </div>
+
+      <!-- RESTOCK TAB -->
+      <div class="tab-content" id="tab-restock">
+        <div class="admin-section-title">Restock Requests</div>
+        <p class="settings-desc">Customers who clicked "Notify Me" when a product was out of stock. Contact them when stock arrives.</p>
+        <div id="admin-restock-list" style="margin-top:1rem;"></div>
+      </div>
   </div>
 </div>
 
@@ -308,6 +349,10 @@ service cloud.firestore {
   <span id="db-status-text">Connecting...</span>
 </div>
 
-<script src="admin.js"></script>
+<!-- Dynamic Config from Server -->
+<script src="/config.js" defer></script>
+
+<script src="core.js" defer></script>
+<script src="admin.js" defer></script>
 </body>
 </html>

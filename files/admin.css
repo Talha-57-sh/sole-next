@@ -62,14 +62,14 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
 /* ======== ADMIN ======== */
 .admin-overlay{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;}
 .admin-overlay.show{display:block;}
-.admin-topbar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:#111;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.admin-topbar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
 .close-admin{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem 1.2rem;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .close-admin:hover{border-color:var(--red);color:var(--red);}
 
 /* Admin tabs */
-.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:#111;padding:0 3rem;}
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg);padding:0 3rem;}
 .admin-tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:1rem 1.5rem;font-family:'DM Sans',sans-serif;font-size:.85rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .2s;position:relative;}
-.admin-tab:hover{color:#fff;}
+.admin-tab:hover{color:var(--text);}
 .admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
 .admin-tab .tab-badge{background:var(--accent);color:var(--on-accent);font-size:.65rem;font-weight:600;padding:.1rem .4rem;border-radius:20px;margin-left:.4rem;}
 
@@ -112,14 +112,14 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
 /* PRODUCTS LIST */
 .admin-products-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
 .admin-product-row{background:var(--panel);display:grid;grid-template-columns:80px 1fr auto auto auto;gap:1.5rem;align-items:center;padding:1.2rem 1.5rem;transition:background .2s;}
-.admin-product-row:hover{background:#1a1a1a;}
+.admin-product-row:hover{background:#f1f5f9;}
 .admin-product-thumb{width:80px;height:60px;object-fit:cover;border:1px solid var(--border);}
 .admin-product-thumb-placeholder{width:80px;height:60px;background:#111;display:flex;align-items:center;justify-content:center;font-size:2rem;border:1px solid var(--border);}
 .apname{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.06em;}
 .apdesc{color:var(--muted);font-size:.8rem;margin-top:.2rem;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .apsizes{color:var(--accent);font-size:.75rem;margin-top:.3rem;}
 .admin-price-badge{font-size:1.1rem;font-weight:500;}
-.admin-tag-badge{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1px solid rgba(200,255,0,.3);padding:.2rem .6rem;white-space:nowrap;}
+.admin-tag-badge{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent-dim);padding:.2rem .6rem;white-space:nowrap;}
 .delete-product-btn{background:transparent;border:1px solid transparent;color:var(--muted);padding:.4rem .8rem;font-size:.8rem;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .delete-product-btn:hover{border-color:var(--red);color:var(--red);}
 .admin-empty{padding:2rem;color:var(--muted);text-align:center;}
@@ -241,7 +241,7 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
 .ss-upload-wrap{margin-top:1rem;}
 .ss-upload-label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem;}
 .ss-drop-zone{border:2px dashed var(--border);background:var(--bg);padding:1rem;display:flex;align-items:center;gap:1rem;cursor:pointer;transition:all .2s;position:relative;}
-.ss-drop-zone:hover,.ss-drop-zone.drag-over{border-color:rgba(200,255,0,.5);background:rgba(200,255,0,.03);}
+.ss-drop-zone:hover,.ss-drop-zone.drag-over{border-color:var(--accent);background:var(--accent-dim);}
 .ss-drop-idle{display:flex;align-items:center;gap:.8rem;pointer-events:none;}
 .ss-drop-icon{font-size:1.8rem;flex-shrink:0;}
 .ss-drop-text{font-size:.82rem;color:var(--muted);line-height:1.5;}
@@ -277,7 +277,7 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
 
 /* DELIVERY LINE IN CART */
 .cart-delivery-row{display:flex;justify-content:space-between;padding:.6rem 2.5rem;font-size:.88rem;color:var(--muted);border-top:1px solid var(--border);}
-.cart-grand-total{padding:1rem 2.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:rgba(200,255,0,.04);}
+.cart-grand-total{padding:1rem 2.5rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--accent-dim);}
 .cart-grand-total span:first-child{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
 .cart-grand-total span:last-child{font-size:1.5rem;font-weight:500;color:var(--accent);}
 
@@ -609,7 +609,7 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
 
 
 /* ADMIN PAGE TOPBAR */
-.admin-topbar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:#111;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.admin-topbar{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:.15em;color:var(--accent);}
 .close-admin{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.5rem 1.2rem;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .close-admin:hover{border-color:var(--red);color:var(--red);}
@@ -646,3 +646,19 @@ body{background:#f1f5f9;color:var(--text);font-family:'DM Sans',sans-serif;font-
   #db-status-bar{font-size:.68rem;padding:.35rem 1rem;}
 }
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* REVIEWS & RESTOCKS UI */
+.review-card { background: var(--panel); border: 1px solid var(--border); padding: 1.5rem; border-radius: 6px; }
+.review-header { display: flex; justify-content: space-between; margin-bottom: 0.8rem; }
+.review-author-name { font-weight: 500; color: var(--text); }
+.review-date-text { font-size: 0.8rem; color: var(--muted); }
+.review-stars { color: #fbbf24; margin-bottom: 0.8rem; }
+.review-text-content { font-size: 0.9rem; color: var(--muted); line-height: 1.5; margin-bottom: 1.2rem; }
+.review-actions { display: flex; gap: 0.8rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+.review-approve-btn { background: var(--green); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+.review-delete-btn { background: transparent; color: var(--red); border: 1px solid var(--red); padding: 0.6rem 1rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; }
+.restock-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--border); background: var(--panel); }
+.restock-email { font-weight: 500; font-size: 0.9rem; }
+.restock-product { font-size: 0.85rem; color: var(--muted); margin-top: 0.2rem; }
+.restock-notified { font-size: 0.75rem; background: var(--green); color: white; padding: 0.2rem 0.5rem; border-radius: 12px; }
+

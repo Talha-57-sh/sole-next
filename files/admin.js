@@ -1,546 +1,6 @@
 
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyCrSsQfobC6HsGDq1BFd7tRhAC7OrrZkeY",
-  authDomain:        "sole-5fa90.firebaseapp.com",
-  projectId:         "sole-5fa90",
-  storageBucket:     "sole-5fa90.firebasestorage.app",
-  messagingSenderId: "386350872003",
-  appId:             "1:386350872003:web:4d739688ffa30816cff976"
-};
+// Shared logic loaded from core.js
 
-
-// =============================================
-//   EDIT YOUR DEFAULT PRODUCTS HERE
-// =============================================
-const DEFAULT_PRODUCTS = [
-  { name:"Aero Runner", price:12900, tag:"Bestseller", desc:"Lightweight mesh upper with responsive foam cushioning. Built for speed, designed to impress.", sizes:[38,39,40,41,42,43,44,45], img:"" },
-  { name:"Urban Slip",  price:9500,  tag:"New Arrival", desc:"Effortless elegance meets street comfort. Premium suede, butter-soft leather lining.", sizes:[38,39,40,41,42,43,44], img:"" },
-  { name:"Oxford Elite",price:21000, tag:"Classic", desc:"Handcrafted full-grain leather. A modern interpretation of timeless formality.", sizes:[39,40,41,42,43,44,45], img:"" },
-  { name:"Trail Hike Pro",price:18500,tag:"Outdoor", desc:"Waterproof upper with deep-lug outsole. Conquer any terrain.", sizes:[38,39,40,41,42,43,44,45], img:"" },
-  { name:"Vela Heel",   price:24800, tag:"Luxury", desc:"Sculptural block heel, Italian nappa leather. Runway presence, all-day comfort.", sizes:[35,36,37,38,39,40,41], img:"" },
-  { name:"Drift Sandal",price:7200,  tag:"Summer", desc:"Contoured cork footbed with adjustable straps. The perfect warm-weather companion.", sizes:[36,37,38,39,40,41,42,43], img:"" }
-];
-
-// =============================================
-//  DEFAULT PASSWORD (SHA-256 of "sole2025")
-// After first run, password hash is stored in localStorage
-// =============================================
-const DEFAULT_PW_HASH = "b9c950640b0040b1c5e73c76aef8ee13b73b4e9e9c2b0d46a4f1d3e2b0e5c8f1"; // sole2025 placeholder – real hash computed at init
-
-// Payment method display names
-const PAY_LABELS = { cod:"Cash on Delivery", easypaisa:"Easypaisa", sadapay:"SadaPay", payoneer:"Payoneer", bank:"Bank Transfer" };
-const PAY_ICONS  = { cod:"💵", easypaisa:"📱", sadapay:"💜", payoneer:"🌐", bank:"🏦" };
-const EMOJIS = ["👟","🥿","👞","🥾","👠","🩴","👡","👢","🪖","🎿"];
-
-let products = [], orders = [], cart = [], selectedSizes = {}, adminUnlocked = false;
-let selectedPayment = "cod";
-let deliveryCharge = 0;
-
-// SHA-256 using Web Crypto API
-// =============================================
-// FIREBASE AUTHENTICATION
-// =============================================
-let auth = null;
-let currentUser = null;
-
-function initAuth() {
-  try {
-    auth = firebase.auth();
-    // Use session persistence — stays logged in during browser session, clears on browser close
-    auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(e => console.warn('Persistence:', e.message));
-
-    // Listen for auth state changes — fires on every page load
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        // User is signed in
-        currentUser = user;
-        adminUnlocked = true;
-        // Update email display everywhere
-        document.querySelectorAll('.auth-email-display').forEach(el => el.textContent = user.email);
-        // Always go straight to dashboard on admin page
-        showDashboard();
-      } else {
-        // User is signed out
-        currentUser = null;
-        adminUnlocked = false;
-        document.querySelectorAll('.auth-email-display').forEach(el => el.textContent = '—');
-      }
-    });
-  } catch(e) {
-    console.warn('Auth init failed:', e.message);
-  }
-}
-
-async function doLogin() {
-  if (!auth) {
-    // Firebase not ready yet — show setup notice
-    document.getElementById('auth-setup-notice').style.display = 'block';
-    return;
-  }
-
-  const email    = document.getElementById('admin-email').value.trim();
-  const password = document.getElementById('admin-password').value;
-  const errEl    = document.getElementById('login-error');
-  const btn      = document.getElementById('login-btn');
-
-  if (!email || !password) {
-    errEl.textContent = 'Please enter your email and password.';
-    errEl.classList.add('show');
-    return;
-  }
-
-  btn.textContent = 'Signing in...';
-  btn.disabled = true;
-  errEl.classList.remove('show');
-
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-    // onAuthStateChanged will fire and call showDashboard()
-    document.getElementById('admin-password').value = '';
-    document.getElementById('admin-email').value = '';
-  } catch(e) {
-    btn.textContent = 'Sign In →';
-    btn.disabled = false;
-    // Show friendly error messages
-    const msg = e.code === 'auth/user-not-found'    ? 'No account found with this email.'
-              : e.code === 'auth/wrong-password'    ? 'Incorrect password.'
-              : e.code === 'auth/invalid-email'     ? 'Invalid email address.'
-              : e.code === 'auth/too-many-requests' ? 'Too many attempts. Try again later.'
-              : e.code === 'auth/configuration-not-found' || e.code === 'auth/operation-not-allowed'
-                ? 'Firebase Auth not enabled. See setup notice below.'
-              : 'Sign in failed: ' + e.message;
-    errEl.textContent = msg;
-    errEl.classList.add('show');
-    // Show setup guide if auth not configured
-    if (e.code === 'auth/configuration-not-found' || e.code === 'auth/operation-not-allowed') {
-      document.getElementById('auth-setup-notice').style.display = 'block';
-    }
-  }
-}
-
-async function adminSignOut() {
-  if (!auth) return;
-  try {
-    await auth.signOut();
-    adminUnlocked = false;
-    currentUser = null;
-    closeAdmin();
-  } catch(e) {
-    alert('Sign out failed: ' + e.message);
-  }
-}
-
-// Keep sha256 for any legacy use but no longer used for auth
-async function sha256(message) {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
-}
-
-function initPasswordHash() {
-  // No longer needed — Firebase Auth handles authentication
-}
-
-// =============================================
-// EMAILJS — ORDER CONFIRMATION EMAILS
-// =============================================
-function loadEmailJsConfig() {
-  try { return JSON.parse(localStorage.getItem('sole_emailjs')) || null; } catch(e) { return null; }
-}
-
-function saveEmailJsConfig() {
-  const cfg = {
-    publicKey:  document.getElementById('ejs-public-key').value.trim(),
-    serviceId:  document.getElementById('ejs-service-id').value.trim(),
-    templateId: document.getElementById('ejs-template-id').value.trim(),
-  };
-  const hint = document.getElementById('ejs-hint');
-  if (!cfg.publicKey || !cfg.serviceId || !cfg.templateId) {
-    hint.textContent = '⚠ All three fields are required.'; hint.style.color='var(--red)'; return;
-  }
-  localStorage.setItem('sole_emailjs', JSON.stringify(cfg));
-  emailjs.init(cfg.publicKey);
-  hint.textContent = '✓ EmailJS config saved! Emails will be sent on new orders.';
-  hint.style.color = 'var(--green)';
-  setTimeout(()=>hint.textContent='', 4000);
-}
-
-function initEmailJs() {
-  const cfg = loadEmailJsConfig();
-  if (cfg && cfg.publicKey) {
-    try { emailjs.init(cfg.publicKey); } catch(e) {}
-  }
-}
-
-async function sendOrderConfirmationEmail(order) {
-  const cfg = loadEmailJsConfig();
-  if (!cfg || !cfg.publicKey || !cfg.serviceId || !cfg.templateId) return; // not configured
-  try {
-    const itemsList = (order.items || []).map(i =>
-      `${i.name} (Size EU ${i.size}) — Rs. ${Number(i.price).toLocaleString()}`
-    ).join('\n');
-
-    await emailjs.send(cfg.serviceId, cfg.templateId, {
-      to_email:        order.customer.email,
-      customer_name:   `${order.customer.fname} ${order.customer.lname}`,
-      order_id:        order.id,
-      order_total:     `Rs. ${Number(order.total).toLocaleString()}`,
-      order_subtotal:  `Rs. ${Number(order.subtotal).toLocaleString()}`,
-      delivery_charge: `Rs. ${Number(order.deliveryCharge).toLocaleString()}`,
-      order_items:     itemsList,
-      payment_method:  PAY_LABELS[order.payment] || order.payment,
-      delivery_address:order.customer.address,
-      customer_phone:  order.customer.phone || '—',
-      order_date:      new Date(order.date).toLocaleDateString('en-PK', {year:'numeric',month:'long',day:'numeric'}),
-    });
-    console.log('✅ Confirmation email sent to', order.customer.email);
-  } catch(e) {
-    console.warn('Email send failed:', e.text || e.message);
-  }
-}
-
-async function testEmailJs() {
-  const cfg = loadEmailJsConfig();
-  const hint = document.getElementById('ejs-hint');
-  if (!cfg || !cfg.publicKey) {
-    hint.textContent = '⚠ Save your config first.'; hint.style.color='var(--red)'; return;
-  }
-  if (!currentUser) {
-    hint.textContent = '⚠ You must be signed in to send a test.'; hint.style.color='var(--red)'; return;
-  }
-  hint.textContent = '📧 Sending test email...'; hint.style.color='var(--muted)';
-  try {
-    await emailjs.send(cfg.serviceId, cfg.templateId, {
-      to_email:        currentUser.email,
-      customer_name:   'Test Customer',
-      order_id:        'TEST-' + Date.now().toString(36).toUpperCase(),
-      order_total:     'Rs. 1,500',
-      order_subtotal:  'Rs. 1,300',
-      delivery_charge: 'Rs. 200',
-      order_items:     'Test Shoe (Size EU 42) — Rs. 1,300',
-      payment_method:  'Cash on Delivery',
-      delivery_address:'123 Test Street, Karachi',
-      customer_phone:  '0300-1234567',
-      order_date:      new Date().toLocaleDateString('en-PK', {year:'numeric',month:'long',day:'numeric'}),
-    });
-    hint.textContent = `✅ Test email sent to ${currentUser.email}!`;
-    hint.style.color = 'var(--green)';
-  } catch(e) {
-    hint.textContent = '❌ Failed: ' + (e.text || e.message);
-    hint.style.color = 'var(--red)';
-  }
-  setTimeout(()=>hint.textContent='', 5000);
-}
-
-// Session persistence handles auth lifecycle — no auto-logout needed
-
-// =============================================
-// FIREBASE DATABASE LAYER
-// =============================================
-let db = null;         // Firestore instance
-let dbReady = false;   // true when connected
-let unsubProducts = null; // realtime listener
-let unsubOrders   = null;
-
-function setDbStatus(state, text) {
-  const bar  = document.getElementById('db-status-bar');
-  const span = document.getElementById('db-status-text');
-  if (bar)  { bar.className  = ''; bar.classList.add(state); }
-  if (span) span.textContent = text;
-}
-
-function loadFirebaseConfig() {
-  try {
-    const raw = localStorage.getItem('sole_firebase_config');
-    return raw ? JSON.parse(raw) : null;
-  } catch(e) { return null; }
-}
-
-function initFirebase(config) {
-  try {
-    // Clean up existing listeners
-    if (unsubProducts) { unsubProducts(); unsubProducts = null; }
-    if (unsubOrders)   { unsubOrders();   unsubOrders   = null; }
-
-    // Delete existing app if any
-    try {
-      const existing = firebase.app();
-      if (existing) existing.delete();
-    } catch(e) {}
-
-    firebase.initializeApp(config);
-    db = firebase.firestore();
-    initAuth(); // Start Firebase Authentication listener
-
-    // Test connection using a public products read (works before auth)
-    db.collection('products').limit(1).get().then(() => {
-      dbReady = true;
-      setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-      const chip = document.getElementById('fb-status-chip');
-      if (chip) { chip.className = 'firebase-status-chip ok'; chip.textContent = 'Connected'; }
-      startRealtimeListeners();
-    }).catch(() => {
-      // Still start listeners — auth state fires separately
-      dbReady = true;
-      setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-      startRealtimeListeners();
-    });
-  } catch(e) {
-    dbReady = false;
-    setDbStatus('disconnected', '⚠ Firebase init failed: ' + e.message);
-  }
-}
-
-function startRealtimeListeners() {
-  if (!db) return;
-
-  // Products listener
-  if (unsubProducts) unsubProducts();
-  unsubProducts = db.collection('products').onSnapshot(snap => {
-    const incoming = snap.docs.map(d => ({ _fbId: d.id, ...d.data() }));
-
-    if (incoming.length > 0) {
-      // Firebase has products — use them
-      products = incoming.sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
-      localStorage.setItem('sole_products', JSON.stringify(products));
-      if (typeof renderAdminProducts === "function") renderAdminProducts();
-    } else if (!snap.metadata.fromCache) {
-      // Firebase is genuinely empty — migrate local products up if we have any
-      const localProducts = products.filter(p => !p._fbId);
-      if (localProducts.length > 0) {
-        console.log('Migrating', localProducts.length, 'local products to Firebase...');
-        migrateLocalProductsToFirebase(localProducts);
-        // Don't clear products — keep showing them while migration runs
-      } else {
-        // Truly no products anywhere
-        products = [];
-        localStorage.setItem('sole_products', JSON.stringify(products));
-        if (typeof renderAdminProducts === 'function') renderAdminProducts();
-      }
-    }
-  }, err => {
-    console.warn('Products listener error:', err.message);
-    setDbStatus('disconnected', '⚠ Lost connection — ' + err.message);
-  });
-
-  // Orders listener
-  if (unsubOrders) unsubOrders();
-  unsubOrders = db.collection('orders').onSnapshot(snap => {
-    orders = snap.docs.map(d => ({ _fbId: d.id, ...d.data() }))
-      .sort((a,b) => new Date(b.date) - new Date(a.date));
-    localStorage.setItem('sole_orders', JSON.stringify(orders));
-    renderOrders && renderOrders();
-    renderOrderStats && renderOrderStats();
-    updateOrderBadge();
-  }, err => {
-    console.warn('Orders listener error:', err.message);
-  });
-
-  // Settings listener
-  db.collection('settings').doc('store').onSnapshot(snap => {
-    if (snap.exists) {
-      const data = snap.data();
-      if (typeof data.deliveryCharge === 'number') {
-        deliveryCharge = data.deliveryCharge;
-        localStorage.setItem('sole_delivery_charge', deliveryCharge);
-        renderCart();
-      }
-    }
-  });
-}
-
-// ---- MIGRATE local products → Firebase (runs once when Firebase is empty) ----
-async function migrateLocalProductsToFirebase(localProducts) {
-  if (!db || !dbReady) return;
-  setDbStatus('saving', '📦 Migrating products to Firebase...');
-  try {
-    const batch = db.batch();
-    localProducts.forEach(p => {
-      const clean = {...p};
-      delete clean._fbId; // remove any stale _fbId
-      const ref = db.collection('products').doc();
-      batch.set(ref, { ...clean, createdAt: Date.now() });
-    });
-    await batch.commit();
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-    console.log('✅ Migration complete');
-  } catch(e) {
-    console.error('Migration failed:', e.message);
-    setDbStatus('disconnected', '⚠ Migration failed: ' + e.message);
-  }
-}
-
-// ---- SAVE / DELETE via Firestore (with localStorage fallback) ----
-
-async function saveProducts() {
-  localStorage.setItem('sole_products', JSON.stringify(products));
-  if (!dbReady || !db) return;
-  // Handled per-document (addProduct / deleteProduct / saveSizeStock)
-}
-
-async function saveOrders() {
-  localStorage.setItem('sole_orders', JSON.stringify(orders));
-  if (!dbReady || !db) return;
-  // Handled per-document in placeOrder / updateStatus / clearAllOrders
-}
-
-async function dbAddProduct(productData) {
-  if (!dbReady || !db) {
-    // Fallback: push to local array
-    products.push(productData);
-    localStorage.setItem('sole_products', JSON.stringify(products));
-    renderStore(); renderAdminProducts();
-    return;
-  }
-  setDbStatus('saving', '💾 Saving product...');
-  try {
-    await db.collection('products').add({ ...productData, createdAt: Date.now() });
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-  } catch(e) {
-    alert('Failed to save product to database: ' + e.message);
-    setDbStatus('disconnected', '⚠ Save failed: ' + e.message);
-  }
-}
-
-async function dbDeleteProduct(prodIdx) {
-  const p = products[prodIdx];
-  if (!dbReady || !db || !p._fbId) {
-    products.splice(prodIdx, 1);
-    localStorage.setItem('sole_products', JSON.stringify(products));
-    renderStore(); renderAdminProducts();
-    return;
-  }
-  setDbStatus('saving', '🗑 Deleting product...');
-  try {
-    await db.collection('products').doc(p._fbId).delete();
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-  } catch(e) {
-    alert('Failed to delete from database: ' + e.message);
-  }
-}
-
-async function dbSaveOrder(order) {
-  localStorage.setItem('sole_orders', JSON.stringify(orders));
-  if (!dbReady || !db) return;
-  setDbStatus('saving', '💾 Saving order...');
-  try {
-    await db.collection('orders').doc(order.id).set(order);
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-  } catch(e) {
-    console.error('Order save failed:', e.message);
-    setDbStatus('disconnected', '⚠ Order save failed: ' + e.message);
-  }
-}
-
-async function dbUpdateOrderStatus(orderId, newStatus) {
-  // Always update local array
-  const o = orders.find(x => x.id === orderId);
-  if (o) o.status = newStatus;
-  localStorage.setItem('sole_orders', JSON.stringify(orders));
-  if (!dbReady || !db) return;
-  try {
-    await db.collection('orders').doc(orderId).update({ status: newStatus });
-  } catch(e) {
-    console.error('Status update failed:', e.message);
-  }
-}
-
-async function dbDeleteAllOrders() {
-  orders = [];
-  localStorage.setItem('sole_orders', JSON.stringify(orders));
-  if (!dbReady || !db) return;
-  setDbStatus('saving', '🗑 Clearing orders...');
-  try {
-    const snap = await db.collection('orders').get();
-    const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    await batch.commit();
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-  } catch(e) {
-    console.error('Clear orders failed:', e.message);
-  }
-}
-
-async function dbUpdateSizeStock(prodIdx) {
-  const p = products[prodIdx];
-  localStorage.setItem('sole_products', JSON.stringify(products));
-  if (!dbReady || !db || !p._fbId) return;
-  setDbStatus('saving', '💾 Updating stock...');
-  try {
-    await db.collection('products').doc(p._fbId).update({
-      sizeStock: p.sizeStock,
-      stock: p.stock
-    });
-    setDbStatus('connected', '🔥 Firebase connected — data syncing in real-time');
-  } catch(e) {
-    console.error('Stock update failed:', e.message);
-    setDbStatus('disconnected', '⚠ Stock sync failed: ' + e.message);
-  }
-}
-
-async function dbSaveDeliveryCharge(val) {
-  localStorage.setItem('sole_delivery_charge', val);
-  if (!dbReady || !db) return;
-  try {
-    await db.collection('settings').doc('store').set({ deliveryCharge: val }, { merge: true });
-  } catch(e) { console.error('Delivery charge save failed:', e.message); }
-}
-
-function saveFirebaseConfig() {
-  const config = {
-    apiKey:            document.getElementById('fb-apiKey').value.trim(),
-    authDomain:        document.getElementById('fb-authDomain').value.trim(),
-    projectId:         document.getElementById('fb-projectId').value.trim(),
-    storageBucket:     document.getElementById('fb-storageBucket').value.trim(),
-    messagingSenderId: document.getElementById('fb-messagingSenderId').value.trim(),
-    appId:             document.getElementById('fb-appId').value.trim(),
-  };
-  if (!config.apiKey || !config.projectId) {
-    const hint = document.getElementById('fb-hint');
-    hint.textContent = '⚠ API Key and Project ID are required.';
-    hint.style.color = 'var(--red)';
-    return;
-  }
-  localStorage.setItem('sole_firebase_config', JSON.stringify(config));
-  const hint = document.getElementById('fb-hint');
-  hint.textContent = 'Connecting to Firebase...';
-  hint.style.color = 'var(--muted)';
-  initFirebase(config);
-}
-
-function disconnectFirebase() {
-  if (unsubProducts) { unsubProducts(); unsubProducts = null; }
-  if (unsubOrders)   { unsubOrders();   unsubOrders   = null; }
-  try { firebase.app().delete(); } catch(e) {}
-  db = null; dbReady = false;
-  localStorage.removeItem('sole_firebase_config');
-  setDbStatus('unconfigured', 'Database disconnected — data saved locally only');
-  const chip = document.getElementById('fb-status-chip');
-  if (chip) { chip.className = 'firebase-status-chip idle'; chip.textContent = '⬤ Not connected'; }
-  const hint = document.getElementById('fb-hint');
-  if (hint) { hint.textContent = '✓ Disconnected. Config cleared.'; hint.style.color = 'var(--muted)'; }
-}
-
-// ---- Fallback local data load (used when Firebase not configured) ----
-function loadData() {
-  // Load from localStorage cache first (fast initial render)
-  // Firebase listeners will override this with live data
-  try {
-    const cached = localStorage.getItem('sole_products');
-    // Only use DEFAULT_PRODUCTS if no cache AND no Firebase config
-    const hasFbConfig = !!localStorage.getItem('sole_firebase_config');
-    products = cached ? JSON.parse(cached) : (hasFbConfig ? [] : [...DEFAULT_PRODUCTS]);
-  } catch(e) { products = []; }
-  try { orders   = JSON.parse(localStorage.getItem('sole_orders'))   || []; } catch(e) { orders = []; }
-  try { deliveryCharge = parseInt(localStorage.getItem('sole_delivery_charge')) || 0; } catch(e) { deliveryCharge = 0; }
-}
-
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]/g,'-'); }
-function genId()    { return 'ORD-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2,3).toUpperCase(); }
-
-// =============================================
 // STORE RENDER (search-aware)
 // =============================================
 function renderStore(filtered) {
@@ -813,14 +273,6 @@ function goToPaymentPage() {
   document.getElementById('order').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function goBackToDelivery() {
-  document.getElementById('checkout-page-2').style.display = 'none';
-  document.getElementById('checkout-page-1').style.display = 'block';
-  document.getElementById('step-ind-2').classList.remove('active');
-  document.getElementById('step-ind-1').classList.remove('done');
-  document.getElementById('step-ind-1').classList.add('active');
-  document.getElementById('order').scrollIntoView({behavior:'smooth',block:'start'});
-}
 
 function renderPaySummary() {
   const subtotal = cart.reduce((s,i)=>s+i.price,0);
@@ -856,32 +308,6 @@ function renderPaySummary() {
 // =============================================
 // PAYONEER CHECKOUT
 // =============================================
-function openPayoneerCheckout() {
-  const programId = localStorage.getItem('sole_payoneer_program_id') || '';
-  const subtotal  = cart.reduce((s,i)=>s+i.price,0);
-  const total     = subtotal + deliveryCharge;
-  const fname     = document.getElementById('fname').value.trim();
-  const lname     = document.getElementById('lname').value.trim();
-  const email     = document.getElementById('email').value.trim();
-
-  if (!programId) {
-    alert('Payoneer is not configured yet. Please ask the admin to add the Program ID in Settings.');
-    return;
-  }
-  // Build Payoneer checkout URL using their Pay Checkout link format
-  const params = new URLSearchParams({
-    program_id: programId,
-    currency: 'USD',             // Payoneer uses USD; amount shown as reference
-    amount: (total / 280).toFixed(2), // rough PKR→USD conversion for reference
-    description: 'SOLE Store Order',
-    client_reference_id: 'SOLE-'+Date.now(),
-    email: email,
-    first_name: fname,
-    last_name: lname
-  });
-  const url = `https://payouts.payoneer.com/partners/lp.aspx?${params.toString()}`;
-  window.open(url, '_blank', 'noopener');
-}
 
 
 function selectPayment(method, btn) {
@@ -892,9 +318,6 @@ function selectPayment(method, btn) {
   document.getElementById('pay-'+method).classList.add('active');
 }
 
-function copyText(text, btn) {
-  navigator.clipboard.writeText(text).then(()=>{ const orig=btn.textContent; btn.textContent='✓ Copied!'; setTimeout(()=>btn.textContent=orig,1500); });
-}
 
 
 
@@ -1009,29 +432,9 @@ function updateOrderBadge() {
 // =============================================
 const ssData = {}; // { 'easypaisa': base64, 'sadapay': base64, 'bank': base64 }
 
-function ssFileSelect(input, method) {
-  const file = input.files[0];
-  if (!file) return;
-  ssLoadFile(file, method);
-  input.value = '';
-}
 
-function ssDragOver(e, method) {
-  e.preventDefault();
-  document.getElementById('ss-zone-'+method).classList.add('drag-over');
-}
 
-function ssDragLeave(method) {
-  document.getElementById('ss-zone-'+method).classList.remove('drag-over');
-}
 
-function ssDrop(e, method) {
-  e.preventDefault();
-  document.getElementById('ss-zone-'+method).classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) { ssLoadFile(file, method); }
-  else { alert('Please drop an image file.'); }
-}
 
 function ssLoadFile(file, method) {
   if (file.size > 8 * 1024 * 1024) { alert('Screenshot too large. Max 8 MB.'); return; }
@@ -1043,44 +446,11 @@ function ssLoadFile(file, method) {
   reader.readAsDataURL(file);
 }
 
-function showSsPreview(method, src, name, size) {
-  document.getElementById('ss-idle-'+method).style.display = 'none';
-  document.getElementById('ss-img-'+method).src = src;
-  document.getElementById('ss-name-'+method).textContent = name;
-  document.getElementById('ss-size-'+method).textContent = size;
-  document.getElementById('ss-preview-'+method).classList.add('show');
-}
 
-function removeSs(e, method) {
-  if (e) e.stopPropagation();
-  delete ssData[method];
-  document.getElementById('ss-idle-'+method).style.display = 'flex';
-  document.getElementById('ss-preview-'+method).classList.remove('show');
-  document.getElementById('ss-img-'+method).src = '';
-  document.getElementById('ss-zone-'+method).classList.remove('drag-over');
-}
 
-function resetSs(method) { removeSs(null, method); }
 
-function openSsLightbox(e, method) {
-  e.stopPropagation();
-  const src = ssData[method] || document.getElementById('ss-img-'+method).src;
-  if (!src) return;
-  document.getElementById('ss-lightbox-img').src = src;
-  document.getElementById('ss-lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
-function openSsLightboxFromSrc(src) {
-  document.getElementById('ss-lightbox-img').src = src;
-  document.getElementById('ss-lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
-function closeSsLightbox() {
-  document.getElementById('ss-lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('ss-lightbox').classList.contains('open')) {
@@ -1094,7 +464,10 @@ document.addEventListener('keydown', e => {
 
 
 function openAdmin() { /* no-op on admin page */ }
-function closeAdmin() { /* no-op on admin page — use Sign Out */ }
+function closeAdmin() {
+  document.getElementById('admin-dashboard').style.display='none';
+  document.getElementById('admin-login').style.display='flex';
+}
 // doLogin() — handled by Firebase Auth above
 // Admin page: showDashboard shows full page instead of overlay
 function showDashboard() {
@@ -1113,6 +486,7 @@ function showDashboard() {
   const pid = localStorage.getItem('sole_payoneer_program_id') || '';
   const pidEl = document.getElementById('setting-payoneer-id');
   if (pidEl) pidEl.value = pid;
+  populatePaymentSettingsFields();
 
   // Populate EmailJS fields
   const ejsCfg = loadEmailJsConfig();
@@ -1146,8 +520,11 @@ function switchTab(name, btn) {
   btn.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
   if(name==='orders'){ renderOrderStats(); renderOrders(); }
+  if(name==='reviews'){ renderReviews(); updateReviewsBadge(); }
+  if(name==='restock'){ renderNotifications(); updateRestockBadge(); }
   if(name==='settings'){
     document.getElementById('setting-delivery').value=deliveryCharge;
+    populatePaymentSettingsFields();
     const pid = localStorage.getItem('sole_payoneer_program_id') || '';
     const pidEl = document.getElementById('setting-payoneer-id');
     if (pidEl) pidEl.value = pid;
@@ -1464,13 +841,6 @@ function renderPdmGallery(p, imgs, emoji) {
   }
 }
 
-function pdmNav(dir) {
-  const p = products[pdmProductIdx];
-  const imgs = p.images && p.images.length ? p.images : (p.img ? [p.img] : []);
-  if(!imgs.length) return;
-  pdmImgIdx = (pdmImgIdx + dir + imgs.length) % imgs.length;
-  pdmGoTo(pdmImgIdx);
-}
 
 function pdmGoTo(idx) {
   const p = products[pdmProductIdx];
@@ -1485,10 +855,6 @@ function pdmGoTo(idx) {
   document.querySelectorAll('.pdm-thumb').forEach((t,i)=>t.classList.toggle('act',i===idx));
 }
 
-function pdmSelectSize(btn) {
-  document.querySelectorAll('.pdm-sz').forEach(b=>b.classList.remove('sel'));
-  btn.classList.add('sel');
-}
 
 function pdmAddToCart(productIdx) {
   const p = products[productIdx];
@@ -1514,14 +880,7 @@ function pdmAddToCart(productIdx) {
   document.getElementById('order').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function closePdm() {
-  document.getElementById('pdm-overlay').classList.remove('open');
-  document.body.style.overflow='';
-}
 
-function pdmClickOutside(e) {
-  if(e.target === document.getElementById('pdm-overlay')) closePdm();
-}
 
 // Keyboard nav for modal
 document.addEventListener('keydown', e=>{
@@ -1751,9 +1110,68 @@ async function saveDeliveryCharge() {
   await dbSaveDeliveryCharge(val);
   renderCart();
   const hint = document.getElementById('delivery-hint');
-  hint.textContent = `✓ Saved — Rs. ${val.toLocaleString()} delivery charge is now active`;
+  hint.textContent = `Saved — Rs. ${val.toLocaleString()} delivery charge is now active`;
   hint.classList.remove('err');
   setTimeout(()=>hint.textContent='', 3000);
+}
+
+function populatePaymentSettingsFields() {
+  loadStorePaymentCache();
+  const map = [
+    ['setting-account-name', storePayment.accountName],
+    ['setting-easypaisa', storePayment.easypaisaNumber],
+    ['setting-sadapay', storePayment.sadapayNumber],
+    ['setting-bank-name', storePayment.bankName],
+    ['setting-bank-account', storePayment.bankAccount],
+    ['setting-wa-number', localStorage.getItem('sole_wa_number') || ''],
+    ['setting-store-city', localStorage.getItem('sole_store_city') || ''],
+    ['setting-instagram', localStorage.getItem('sole_instagram') || ''],
+  ];
+  map.forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  });
+}
+
+async function savePaymentSettings() {
+  const payment = {
+    accountName: document.getElementById('setting-account-name').value.trim() || 'SOLE',
+    easypaisaNumber: document.getElementById('setting-easypaisa').value.trim(),
+    sadapayNumber: document.getElementById('setting-sadapay').value.trim(),
+    bankName: document.getElementById('setting-bank-name').value.trim(),
+    bankAccount: document.getElementById('setting-bank-account').value.trim(),
+  };
+  const waNumberVal = document.getElementById('setting-wa-number').value.trim();
+  const storeCity = document.getElementById('setting-store-city').value.trim();
+  const instagram = document.getElementById('setting-instagram').value.trim();
+  storePayment = payment;
+  localStorage.setItem('sole_payment', JSON.stringify(storePayment));
+  if (waNumberVal) {
+    waNumber = waNumberVal;
+    localStorage.setItem('sole_wa_number', waNumber);
+  }
+  if (storeCity) localStorage.setItem('sole_store_city', storeCity);
+  if (instagram) localStorage.setItem('sole_instagram', instagram);
+  if (typeof populatePaymentDetails === 'function') populatePaymentDetails();
+  if (typeof setWaLinks === 'function') setWaLinks();
+  if (typeof syncFooterContact === 'function') syncFooterContact();
+  const hint = document.getElementById('payment-settings-hint');
+  if (dbReady && db) {
+    try {
+      await db.collection('settings').doc('store').set({
+        payment,
+        waNumber: waNumberVal || null,
+        storeCity: storeCity || null,
+        instagram: instagram || null,
+      }, { merge: true });
+      if (hint) { hint.textContent = 'Saved — checkout will show these details.'; hint.classList.remove('err'); }
+    } catch (e) {
+      if (hint) { hint.textContent = 'Saved locally only: ' + e.message; hint.classList.add('err'); }
+    }
+  } else if (hint) {
+    hint.textContent = 'Saved locally — connect Firebase to sync across devices.';
+  }
+  setTimeout(() => { if (hint) hint.textContent = ''; }, 4000);
 }
 
 // =============================================
@@ -2023,4 +1441,130 @@ updateOrderBadge();
 loadPayoneerId();
 setDbStatus('saving', 'Connecting to Firebase...');
 initFirebase(FIREBASE_CONFIG);
+
+// =============================================
+// REVIEWS TAB (PHASE 1)
+// =============================================
+async function renderReviews() {
+  if(!dbReady) return;
+  const filter = document.getElementById('review-status-filter').value;
+  const list = document.getElementById('admin-reviews-list');
+  list.innerHTML = '<div style="color:var(--muted)">Loading reviews...</div>';
+  try {
+    const snap = await firebase.firestore().collection('reviews').orderBy('date', 'desc').get();
+    if(snap.empty) { list.innerHTML = '<div style="color:var(--muted)">No reviews found.</div>'; return; }
+    let html = '';
+    snap.forEach(doc => {
+      const r = doc.data();
+      if(filter === 'pending' && r.approved) return;
+      if(filter === 'approved' && !r.approved) return;
+      const stars = '★'.repeat(r.rating) + '☆'.repeat(5-r.rating);
+      const dStr = new Date(r.date).toLocaleString();
+      html += `<div class="review-card" id="rev-${doc.id}">
+        <div class="review-header">
+          <span class="review-author-name">${escHtml(r.author)}</span>
+          <span class="review-date-text">${dStr}</span>
+        </div>
+        <div class="review-product-text" style="font-size:.8rem;color:var(--accent);margin-bottom:.5rem">Product: ${escHtml(r.productName)}</div>
+        <div class="review-stars">${stars}</div>
+        <div class="review-text-content">${escHtml(r.text)}</div>
+        <div class="review-actions">
+          ${!r.approved ? `<button class="review-approve-btn" onclick="approveReview('${doc.id}')">Approve Review</button>` : `<span style="color:var(--green);font-size:.8rem">✓ Approved</span>`}
+          <button class="review-delete-btn" onclick="deleteReview('${doc.id}')">Delete</button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html || '<div style="color:var(--muted)">No reviews match filter.</div>';
+  } catch(e) {
+    console.error('Error fetching reviews:', e);
+    list.innerHTML = '<div style="color:var(--red)">Failed to load reviews.</div>';
+  }
+}
+async function approveReview(id) {
+  if(!dbReady) return;
+  if(!confirm('Approve this review so it appears on the public site?')) return;
+  try {
+    await firebase.firestore().collection('reviews').doc(id).update({ approved: true });
+    renderReviews(); updateReviewsBadge();
+  } catch(e) { console.error('Approve failed:', e); alert('Failed to approve'); }
+}
+async function deleteReview(id) {
+  if(!dbReady) return;
+  if(!confirm('Permanently delete this review?')) return;
+  try {
+    await firebase.firestore().collection('reviews').doc(id).delete();
+    renderReviews(); updateReviewsBadge();
+  } catch(e) { console.error('Delete failed:', e); alert('Failed to delete'); }
+}
+async function updateReviewsBadge() {
+  if(!dbReady) return;
+  try {
+    const snap = await firebase.firestore().collection('reviews').where('approved', '==', false).get();
+    const b = document.getElementById('tab-reviews-badge');
+    if(b) { b.textContent = snap.size; b.style.display = snap.size > 0 ? 'inline-flex' : 'none'; }
+  } catch(e) { console.error('Badge update error', e); }
+}
+
+// =============================================
+// RESTOCKS TAB (PHASE 1)
+// =============================================
+async function renderNotifications() {
+  if(!dbReady) return;
+  const list = document.getElementById('admin-restock-list');
+  list.innerHTML = '<div style="color:var(--muted)">Loading requests...</div>';
+  try {
+    const snap = await firebase.firestore().collection('notifications').orderBy('timestamp', 'desc').get();
+    if(snap.empty) { list.innerHTML = '<div style="color:var(--muted)">No restock requests.</div>'; return; }
+    let html = '';
+    snap.forEach(doc => {
+      const n = doc.data();
+      const dStr = n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Unknown date';
+      html += `<div class="restock-row" id="notif-${doc.id}">
+        <div>
+          <div class="restock-email">${escHtml(n.email)}</div>
+          <div class="restock-product">Waiting for: ${escHtml(n.productName)} (${dStr})</div>
+        </div>
+        <div>
+          ${n.notified ? `<span class="restock-notified">Notified</span>` : `<button class="review-approve-btn" onclick="markNotified('${doc.id}')">Mark Notified</button>`}
+          <button class="review-delete-btn" style="margin-left:.5rem" onclick="deleteNotification('${doc.id}')">✕</button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html;
+  } catch(e) {
+    console.error('Error fetching notifications:', e);
+    list.innerHTML = '<div style="color:var(--red)">Failed to load restock requests.</div>';
+  }
+}
+async function markNotified(id) {
+  if(!dbReady) return;
+  try {
+    await firebase.firestore().collection('notifications').doc(id).update({ notified: true });
+    renderNotifications(); updateRestockBadge();
+  } catch(e) { console.error('Mark notified failed:', e); }
+}
+async function deleteNotification(id) {
+  if(!dbReady) return;
+  if(!confirm('Delete this request?')) return;
+  try {
+    await firebase.firestore().collection('notifications').doc(id).delete();
+    renderNotifications(); updateRestockBadge();
+  } catch(e) { console.error('Delete notif failed:', e); }
+}
+async function updateRestockBadge() {
+  if(!dbReady) return;
+  try {
+    const snap = await firebase.firestore().collection('notifications').where('notified', '==', false).get();
+    const b = document.getElementById('tab-restock-badge');
+    if(b) { b.textContent = snap.size; b.style.display = snap.size > 0 ? 'inline-flex' : 'none'; }
+  } catch(e) { console.error('Restock badge error', e); }
+}
+
+// Initial badge update after Firebase connects
+setTimeout(() => {
+  if (dbReady) {
+    updateReviewsBadge();
+    updateRestockBadge();
+  }
+}, 2000);
 localStorage.setItem('sole_firebase_config', JSON.stringify(FIREBASE_CONFIG));

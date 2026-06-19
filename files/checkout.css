@@ -6,23 +6,91 @@
             flex-direction: column;
         }
 
-        @media(min-width: 900px) {
-            .checkout-split {
-                flex-direction: row;
-            }
-        }
-
         .checkout-left {
             flex: 1.15;
-            padding: 3rem 5%;
+            padding: 2rem 5%;
             background: #ffffff;
-            border-right: 1px solid var(--border);
         }
 
         .checkout-right {
             flex: 0.85;
-            padding: 3rem 5%;
+            padding: 0;
             background: #fafafa;
+            border-bottom: 1px solid var(--border);
+            order: -1; /* Move to top on mobile */
+        }
+
+        /* Mobile Summary Toggle */
+        .mobile-summary-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1.2rem 5%;
+            background: #ffffff;
+            border: none;
+            cursor: pointer;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+        }
+
+        .mobile-summary-toggle .toggle-text {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        .mobile-summary-toggle .toggle-icon {
+            transition: transform 0.3s ease;
+            color: var(--accent);
+        }
+
+        .mobile-summary-toggle.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .mobile-summary-toggle .toggle-price {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .mobile-summary-content {
+            display: none;
+            padding: 1.5rem 5% 2rem 5%;
+            background: #fafafa;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .mobile-summary-content.expanded {
+            display: block;
+        }
+
+        @media(min-width: 900px) {
+            .checkout-split {
+                flex-direction: row;
+            }
+            .checkout-left {
+                padding: 3rem 5%;
+                border-right: 1px solid var(--border);
+            }
+            .checkout-right {
+                padding: 3rem 5%;
+                border-bottom: none;
+                order: 0;
+            }
+            .mobile-summary-toggle {
+                display: none;
+            }
+            .mobile-summary-content {
+                display: block;
+                padding: 0;
+                border-bottom: none;
+            }
         }
 
         @media(min-width: 1200px) {
@@ -42,10 +110,10 @@
         }
 
         .checkout-section h2 {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            font-size: 1.2rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 1.15rem;
             font-weight: 500;
-            color: #333;
+            color: var(--text);
             margin-bottom: 1rem;
         }
 
@@ -76,20 +144,21 @@
             width: 100%;
             height: 54px;
             padding: 1.5rem 0.8rem 0.4rem !important;
-            border: 1px solid #d9d9d9;
-            border-radius: 5px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
             font-size: 0.95rem;
             line-height: 1.2;
-            background: #fff;
-            color: #333;
-            transition: all 0.2s;
-            font-family: inherit;
+            background: var(--bg);
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'DM Sans', sans-serif;
             box-sizing: border-box;
         }
         .checkout-select {
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
+            padding-top: 1.6rem !important;
             background-image: url('data:image/svg+xml;utf8,<svg fill="%23333" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
             background-repeat: no-repeat;
             background-position: right 0.8rem center;
@@ -120,13 +189,10 @@
             font-size: 0.7rem;
         }
 
-        .select-label {
-            position: absolute;
-            left: 0.9rem;
-            top: 0.4rem;
-            font-size: 0.7rem;
-            color: #737373;
-            pointer-events: none;
+        .form-group.floating-label .select-label {
+            top: 0.35rem;
+            transform: none;
+            font-size: 0.65rem;
         }
 
         .input-icon {
@@ -224,6 +290,16 @@
             align-items: center;
         }
 
+        .payment-logos span.pay-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 0.25rem 0.45rem;
+            border-radius: 3px;
+        }
+
         .pay-cc {
             height: 24px;
             border: 1px solid #eee;
@@ -232,11 +308,51 @@
 
         .payment-detail-box {
             padding: 1.5rem;
-            background: #fafafa;
-            border-top: 1px solid #d9d9d9;
+            background: var(--panel);
+            border-top: 1px solid var(--border);
             font-size: 0.9rem;
-            color: #555;
-            text-align: center;
+            color: var(--muted);
+            text-align: left;
+        }
+
+        .pay-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.88rem;
+            color: var(--text);
+        }
+
+        .copy-val {
+            border: none;
+            background: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0;
+            text-align: right;
+        }
+
+        .copy-val:hover { text-decoration: underline; }
+
+        .payoneer-pay-btn {
+            width: 100%;
+            margin-bottom: 1rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .free-delivery-bar {
+            display: flex !important;
         }
 
         .checkout-submit-btn {
@@ -392,5 +508,68 @@
             font-size: 0.85rem;
             color: #737373;
             font-weight: normal;
+        }
+
+        /* ===== PRINT STYLES — single-page receipt ===== */
+        @media print {
+            /* Hide everything except the confirmation overlay */
+            .site-nav,
+            .mob-tabbar,
+            .free-delivery-bar,
+            .checkout-split,
+            #db-status-bar,
+            .wa-float,
+            .ss-lightbox {
+                display: none !important;
+            }
+
+            /* Make the confirmation overlay flow naturally for print */
+            .order-conf-overlay.show {
+                display: block !important;
+                position: static !important;
+                background: #fff !important;
+                overflow: visible !important;
+            }
+
+            .order-conf-wrap {
+                padding: 0.5cm 0 !important;
+                max-width: 100% !important;
+            }
+
+            /* Hide the action buttons (print/continue) in the printout */
+            .order-conf-actions {
+                display: none !important;
+            }
+
+            /* Hide WhatsApp link in receipt */
+            #conf-wa-wrap {
+                display: none !important;
+            }
+
+            /* Clean styling for print */
+            .order-conf-card {
+                break-inside: avoid;
+                border: 1px solid #ddd !important;
+            }
+
+            .order-conf-info-grid {
+                background: #eee !important;
+            }
+
+            .order-conf-info-cell {
+                background: #fff !important;
+            }
+
+            .order-conf-steps {
+                background: #eee !important;
+            }
+
+            .order-conf-step {
+                background: #fff !important;
+            }
+
+            body {
+                background: #fff !important;
+            }
         }
 
