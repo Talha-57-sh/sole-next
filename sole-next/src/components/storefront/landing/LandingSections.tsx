@@ -74,26 +74,26 @@ export function LandingHero() {
         </motion.span>
 
         <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
-          {/* Shoe Image layered perfectly behind the text */}
+          {/* Shoe Image floating dynamically in front of the massive text */}
           <motion.div 
             style={{ 
               rotateX,
               y: yOffset,
-              rotateZ: -15
+              rotateZ: -25
             }}
-            className="absolute z-0 w-[300px] lg:w-[600px] pointer-events-none"
+            className="absolute z-20 w-[340px] lg:w-[680px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/air-jordan.png"
               alt="Nike Air Jordan 1 White"
-              width={600}
-              height={400}
+              width={680}
+              height={450}
               priority
-              className="w-full h-auto drop-shadow-2xl"
+              className="w-full h-auto"
             />
           </motion.div>
 
-          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy relative z-10">
+          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy relative z-0 opacity-95">
             {headingWords.map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
