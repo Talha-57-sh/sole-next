@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-navy: var(--navy);
+  --color-mint: var(--mint);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-glow: var(--accent-glow);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-panel: var(--panel);
+  --color-red: var(--red);
+  --color-green: var(--green);
+  --color-blue: var(--blue);
+  --color-orange: var(--orange);
+  --color-gradient-1: var(--gradient-1);
+  --color-gradient-2: var(--gradient-2);
+  --color-gradient-3: var(--gradient-3);
+  --font-sans: var(--font-dm-sans), sans-serif;
+}
+
+:root {
+  --bg: #ffffff;
+  --text: #0f172a;
+  --trust-h: 0px;
+  --nav-h: 4rem;
+  --navy: #0a1128;
+  --mint: #5eead4;
+  --hero-grad: linear-gradient(105deg, #faf9f7 0%, #f3f4f6 45%, #e8eaee 100%);
+  --accent: #000000;
+  --accent-dim: rgba(0, 0, 0, 0.1);
+  --accent-glow: rgba(0, 0, 0, 0.05);
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --panel: #f8fafc;
+  --red: #ef4444;
+  --green: #22c55e;
+  --blue: #38bdf8;
+  --orange: #f97316;
+  --gradient-1: #2563eb;
+  --gradient-2: #60a5fa;
+  --gradient-3: #93c5fd;
+}
+
+/* FORCE VISIBILITY — ensures content never gets hidden by browser quirks */
+html,
+body {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+}
