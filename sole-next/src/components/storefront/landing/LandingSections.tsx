@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
@@ -48,117 +48,147 @@ const polaroids = [
   { img: SHOE_5, label: "NOIR", rotate: 22, color: "#e5e7eb" },
 ];
 
+export function useScrollFlip(ref: React.RefObject<HTMLElement | null>) {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const height = rect.height;
+      const scrolled = -rect.top;
+      let p = scrolled / height;
+      if (p < 0) p = 0;
+      if (p > 1) p = 1;
+      setProgress(p);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [ref]);
+
+  return progress;
+}
+
 export function LandingHero() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const titleY = useTransform(scrollYProgress, [0, 1], [0, -120]);
-  const stackY = useTransform(scrollYProgress, [0, 1], [0, 180]);
-  const fan = useTransform(scrollYProgress, [0, 1], [1, 1.8]);
+  const progress = useScrollFlip(ref);
+  const rotateY = progress * 360;
+  
   const headingWords = ["Step", "Different."];
 
   return (
-    <section ref={ref} className="relative min-h-screen pt-32 pb-20 px-6 overflow-hidden">
+    <section ref={ref} className="relative flex flex-col items-center justify-center text-center min-h-screen pt-32 pb-20 px-6 overflow-hidden">
       {/* background glows */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue/30 blur-3xl" />
         <div className="absolute top-1/2 right-0 h-[400px] w-[400px] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-        <motion.div style={{ y: titleY }} className="z-10">
-          <motion.span
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
-            New season styles
-          </motion.span>
+      <motion.div className="z-10 flex flex-col items-center">
+        <motion.span
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur"
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
+          New season styles
+        </motion.span>
 
-          <h1 className="mt-6 font-display text-[clamp(3.5rem,9vw,8rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-navy">
+        <div className="relative mt-6" style={{ perspective: "1200px" }}>
+          {/* Shoe Image layered on top of text */}
+          <div className="absolute left-1/2 top-1/2 z-10 w-[260px] lg:w-[640px] -translate-x-1/2 -translate-y-[60%] pointer-events-none">
+            <Image
+              src="/assets/jordan.png"
+              alt="Air Jordan 1"
+              width={640}
+              height={640}
+              className="w-full h-auto drop-shadow-2xl"
+              style={{
+                transform: `rotateY(${rotateY}deg) rotate(-15deg)`,
+                willChange: "transform",
+                transition: "transform 0.05s linear",
+              }}
+            />
+          </div>
+
+          <h1 className="font-display text-7xl lg:text-9xl font-black leading-[0.95] tracking-[-0.04em] text-navy">
             {headingWords.map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
                   initial={{ y: "110%", filter: "blur(8px)" }}
                   animate={{ y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 1, delay: 0.1 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="inline-block"
+                  className="inline-block relative z-0"
                 >
                   {word}
                 </motion.span>
               </span>
             ))}
           </h1>
+        </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="mt-8 max-w-md text-lg text-navy/70"
-          >
-            Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="mt-10 flex items-center gap-4"
-          >
-            <Link href="#products" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
-            }}>
-              <MagneticButton className="group inline-flex items-center gap-3 rounded-full bg-navy px-8 py-4 text-base font-semibold text-white shadow-[0_20px_50px_-15px_rgba(11,26,51,0.6)]">
-                Shop Now
-                <motion.span
-                  className="inline-flex"
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 4 }}
-                >
-                  <ArrowRight className="h-5 w-5" />
-                </motion.span>
-              </MagneticButton>
-            </Link>
-            <a href="#story" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
-              See the story →
-            </a>
-          </motion.div>
-        </motion.div>
-
-        {/* Polaroid stack */}
-        <motion.div
-          style={{ y: stackY, scale: fan }}
-          className="relative mx-auto h-[520px] w-full max-w-[520px]"
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+          className="mt-8 max-w-xl text-lg text-navy/70"
         >
+          Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="mt-10 flex flex-col items-center gap-6"
+        >
+          <Link href="#products" onClick={(e) => {
+            e.preventDefault();
+            document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+          }}>
+            <MagneticButton className="group inline-flex items-center gap-3 rounded-full bg-navy px-10 py-5 text-lg font-semibold text-white shadow-[0_20px_50px_-15px_rgba(11,26,51,0.6)]">
+              Shop Now
+              <motion.span
+                className="inline-flex"
+                initial={{ x: 0 }}
+                whileHover={{ x: 4 }}
+              >
+                <ArrowRight className="h-5 w-5" />
+              </motion.span>
+            </MagneticButton>
+          </Link>
+          <a href="#products" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
+            Explore the collection →
+          </a>
+        </motion.div>
+      </motion.div>
+
+      {/* Hidden Polaroid stack for backwards compatibility if needed, placed in background */}
+      <div className="absolute right-0 top-1/2 -z-0 opacity-10 blur-sm pointer-events-none hidden lg:block">
+        <div className="relative mx-auto h-[520px] w-[520px]">
           {polaroids.map((p, i) => {
             const offset = i - 2;
             return (
-              <motion.div
+              <div
                 key={p.label}
-                initial={{ opacity: 0, y: 60, rotate: 0 }}
-                animate={{ opacity: 1, y: 0, rotate: p.rotate }}
-                transition={{ delay: 0.4 + i * 0.12, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -20, scale: 1.05, rotate: p.rotate * 0.6, zIndex: 50 }}
                 style={{
                   left: `calc(50% + ${offset * 38}px - 130px)`,
                   top: `calc(50% - 170px)`,
                   background: p.color,
-                  zIndex: 10 + i,
+                  zIndex: i,
+                  transform: `rotate(${p.rotate}deg)`
                 }}
                 className="absolute h-[340px] w-[260px] rounded-[6px] bg-white p-3 pb-12 shadow-[0_25px_60px_-20px_rgba(11,26,51,0.45)]"
               >
                 <div className="relative h-full w-full overflow-hidden rounded-sm" style={{ background: p.color }}>
                   <Image src={p.img} alt={p.label} fill sizes="260px" className="object-cover" />
                 </div>
-                <div className="absolute bottom-3 left-0 right-0 text-center text-[11px] font-bold uppercase tracking-[0.25em] text-navy/70">
-                  {p.label}
-                </div>
-              </motion.div>
+              </div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

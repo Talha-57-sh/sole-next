@@ -6,10 +6,8 @@ import ProductGrid from "@/components/storefront/ProductGrid";
 import { 
   LandingHero, 
   Marquee, 
-  FeaturedPinned, 
   HorizontalShowcase, 
-  CategoryParallax, 
-  CtaBand 
+  CategoryParallax
 } from "@/components/storefront/landing/LandingSections";
 
 export default async function Home() {
@@ -27,10 +25,8 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen overflow-x-clip">
       <LandingHero />
       <Marquee />
-      <FeaturedPinned />
       <HorizontalShowcase products={products} />
       <CategoryParallax />
-      <CtaBand />
       
       <section id="products" className="py-32 px-6 max-w-7xl mx-auto w-full scroll-mt-20">
         <div className="mb-12 text-center md:text-left">
