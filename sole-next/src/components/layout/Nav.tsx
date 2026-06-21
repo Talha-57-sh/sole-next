@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Heart, MessageCircle, ShoppingBag, Menu, X, Home } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { useSearch } from "@/hooks/useSearch";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -13,12 +14,37 @@ export default function Nav() {
   const [searchOpen, setSearchOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const [mounted, setMounted] = useState(false);
-  
+
+  // Search state
+  const [localQuery, setLocalQuery] = useState("");
+  const setGlobalQuery = useSearch((s) => s.setQuery);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setLocalQuery(value);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        setGlobalQuery(value.trim());
+      }, 250);
+    },
+    [setGlobalQuery]
+  );
+
+  const clearSearch = useCallback(() => {
+    setLocalQuery("");
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setGlobalQuery("");
+  }, [setGlobalQuery]);
+
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
   }, []);
 
   return (
@@ -46,8 +72,15 @@ export default function Nav() {
             <input 
               type="text" 
               placeholder="Search for a shoe..." 
+              value={localQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="bg-transparent border-none outline-none ml-3 w-full text-sm text-text placeholder-muted"
             />
+            {localQuery && (
+              <button onClick={clearSearch} className="p-1 text-muted hover:text-text transition-colors flex-shrink-0">
+                <X size={14} />
+              </button>
+            )}
           </div>
 
           {/* Right Actions */}
@@ -99,8 +132,15 @@ export default function Nav() {
                 <input 
                   type="text" 
                   placeholder="Search for a shoe..." 
+                  value={localQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="bg-transparent border-none outline-none ml-3 w-full text-sm text-text placeholder-muted"
                 />
+                {localQuery && (
+                  <button onClick={clearSearch} className="p-1 text-muted hover:text-text transition-colors flex-shrink-0">
+                    <X size={14} />
+                  </button>
+                )}
               </div>
             </motion.div>
           )}
@@ -175,3 +215,4 @@ export default function Nav() {
     </>
   );
 }
+

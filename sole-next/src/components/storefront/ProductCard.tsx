@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Product } from "@/lib/types";
 import { useCart } from "@/hooks/useCart";
 
@@ -60,18 +61,18 @@ export default function ProductCard({ product, index }: Props) {
         ) : null}
       </div>
 
-      {/* Image */}
-      <div className="relative w-full aspect-square bg-panel rounded-lg overflow-hidden mb-4 cursor-pointer group">
+      {/* Image — navigates to product detail */}
+      <Link href={`/product/${product.id}`} className="relative w-full aspect-square bg-panel rounded-lg overflow-hidden mb-4 cursor-pointer group block">
         {coverImg ? (
           <Image src={coverImg} alt={product.name} fill sizes="(max-width: 768px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">👟</div>
         )}
-      </div>
+      </Link>
 
       <div className="flex flex-col flex-1">
         <span className="text-[10px] uppercase tracking-widest text-muted mb-1 font-semibold">{product.tag || product.category || 'Footwear'}</span>
-        <h3 className="font-bold text-navy text-sm md:text-base leading-tight mb-2 truncate cursor-pointer">{product.name}</h3>
+        <Link href={`/product/${product.id}`} className="font-bold text-navy text-sm md:text-base leading-tight mb-2 truncate hover:text-blue transition-colors">{product.name}</Link>
         <p className="text-xs text-muted line-clamp-2 mb-4 flex-1">{product.desc}</p>
 
         {isOos && (
