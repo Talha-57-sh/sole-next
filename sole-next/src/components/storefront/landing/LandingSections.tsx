@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import Image, { StaticImageData } from "next/image";
@@ -39,80 +39,44 @@ export function RevealText({ children, className = "" }: { children: string; cla
   );
 }
 
-
+/* -------------------- HERO -------------------- */
+const polaroids = [
+  { img: SHOE_4, label: "RUNNERS", rotate: -18, color: "#fee2e2" },
+  { img: SHOE_2, label: "COURT", rotate: -8, color: "#dbeafe" },
+  { img: SHOE_1, label: "CLASSICS", rotate: 4, color: "#fce7f3" },
+  { img: SHOE_3, label: "RETRO", rotate: 14, color: "#fef3c7" },
+  { img: SHOE_5, label: "NOIR", rotate: 22, color: "#e5e7eb" },
+];
 
 export function LandingHero() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  
-  // A clean kickflip (rotateX) animation that doesn't cause flat mirroring, combined with an upward float
-  const rotateX = useTransform(scrollYProgress, [0, 1], [0, 360]);
-  const yOffset = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
-  
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const titleY = useTransform(scrollYProgress, [0, 1], [0, -120]);
+  const stackY = useTransform(scrollYProgress, [0, 1], [0, 180]);
+  const fan = useTransform(scrollYProgress, [0, 1], [1, 1.8]);
   const headingWords = ["Step", "Different."];
 
   return (
-    <section ref={ref} className="relative flex flex-col items-center justify-center text-center min-h-screen pt-32 pb-20 px-6 overflow-hidden">
+    <section ref={ref} className="relative min-h-screen pt-32 pb-20 px-6 overflow-hidden">
       {/* background glows */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue/30 blur-3xl" />
         <div className="absolute top-1/2 right-0 h-[400px] w-[400px] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <motion.div className="z-10 flex flex-col items-center w-full">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur mb-10"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
-          New season styles
-        </motion.span>
-
-        <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
-          {/* Left Shoe (White Jordan) floating top-left on mobile, left on desktop */}
-          <motion.div 
-            style={{ 
-              rotateX,
-              y: yOffset,
-              rotateZ: -25
-            }}
-            className="absolute z-20 -left-4 top-0 lg:top-1/2 lg:-translate-y-1/2 lg:-left-48 w-[160px] md:w-[240px] lg:w-[480px] pointer-events-none drop-shadow-[0_20px_20px_rgba(0,0,0,0.35)] lg:drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
+        <motion.div style={{ y: titleY }} className="z-10">
+          <motion.span
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur"
           >
-            <Image
-              src="/assets/air-jordan.png"
-              alt="Nike Air Jordan 1 White"
-              width={480}
-              height={320}
-              priority
-              className="w-full h-auto"
-            />
-          </motion.div>
+            <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
+            New season styles
+          </motion.span>
 
-          {/* Right Shoe (Red Jordan) floating bottom-right on mobile, right on desktop */}
-          <motion.div 
-            style={{ 
-              rotateX,
-              y: yOffset,
-              rotateZ: 15
-            }}
-            className="absolute z-20 -right-4 bottom-0 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:-right-48 w-[160px] md:w-[240px] lg:w-[480px] pointer-events-none drop-shadow-[0_20px_20px_rgba(0,0,0,0.35)] lg:drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
-          >
-            <Image
-              src="/assets/red-jordan.png"
-              alt="Nike Air Jordan 1 Red"
-              width={480}
-              height={320}
-              priority
-              className="w-full h-auto"
-            />
-          </motion.div>
-
-          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy relative z-0 opacity-95">
+          <h1 className="mt-6 font-display text-[clamp(3.5rem,9vw,8rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-navy">
             {headingWords.map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
@@ -126,44 +90,76 @@ export function LandingHero() {
               </span>
             ))}
           </h1>
-        </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.6 }}
-          className="mt-10 max-w-xl text-lg text-navy/70"
-        >
-          Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="mt-8 max-w-md text-lg text-navy/70"
+          >
+            Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
+          </motion.p>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="mt-10 flex flex-col items-center gap-6"
-        >
-          <Link href="#products" onClick={(e) => {
-            e.preventDefault();
-            document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
-          }}>
-            <MagneticButton className="group inline-flex items-center gap-3 rounded-full bg-navy px-10 py-5 text-lg font-semibold text-white shadow-[0_20px_50px_-15px_rgba(11,26,51,0.6)]">
-              Shop Now
-              <motion.span
-                className="inline-flex"
-                initial={{ x: 0 }}
-                whileHover={{ x: 4 }}
-              >
-                <ArrowRight className="h-5 w-5" />
-              </motion.span>
-            </MagneticButton>
-          </Link>
-          <a href="#products" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
-            Explore the collection →
-          </a>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-10 flex items-center gap-4"
+          >
+            <Link href="#products" onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+            }}>
+              <MagneticButton className="group inline-flex items-center gap-3 rounded-full bg-navy px-8 py-4 text-base font-semibold text-white shadow-[0_20px_50px_-15px_rgba(11,26,51,0.6)]">
+                Shop Now
+                <motion.span
+                  className="inline-flex"
+                  initial={{ x: 0 }}
+                  whileHover={{ x: 4 }}
+                >
+                  <ArrowRight className="h-5 w-5" />
+                </motion.span>
+              </MagneticButton>
+            </Link>
+            <a href="#story" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
+              See the story →
+            </a>
+          </motion.div>
         </motion.div>
-      </motion.div>
 
+        {/* Polaroid stack */}
+        <motion.div
+          style={{ y: stackY, scale: fan }}
+          className="relative mx-auto h-[520px] w-full max-w-[520px]"
+        >
+          {polaroids.map((p, i) => {
+            const offset = i - 2;
+            return (
+              <motion.div
+                key={p.label}
+                initial={{ opacity: 0, y: 60, rotate: 0 }}
+                animate={{ opacity: 1, y: 0, rotate: p.rotate }}
+                transition={{ delay: 0.4 + i * 0.12, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -20, scale: 1.05, rotate: p.rotate * 0.6, zIndex: 50 }}
+                style={{
+                  left: `calc(50% + ${offset * 38}px - 130px)`,
+                  top: `calc(50% - 170px)`,
+                  background: p.color,
+                  zIndex: 10 + i,
+                }}
+                className="absolute h-[340px] w-[260px] rounded-[6px] bg-white p-3 pb-12 shadow-[0_25px_60px_-20px_rgba(11,26,51,0.45)]"
+              >
+                <div className="relative h-full w-full overflow-hidden rounded-sm" style={{ background: p.color }}>
+                  <Image src={p.img} alt={p.label} fill sizes="260px" className="object-cover" />
+                </div>
+                <div className="absolute bottom-3 left-0 right-0 text-center text-[11px] font-bold uppercase tracking-[0.25em] text-navy/70">
+                  {p.label}
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </div>
     </section>
   );
 }
@@ -228,6 +224,10 @@ export function FeaturedPinned() {
 
 /* -------------------- HORIZONTAL SHOWCASE -------------------- */
 export function HorizontalShowcase({ products }: { products: Product[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-72%"]);
+  
   // Use up to 5 actual products from Firebase for the horizontal showcase
   const showcaseProducts = products.slice(0, 5);
   // Fallbacks if db is empty or has < 5 products
@@ -242,17 +242,14 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
   const itemsToRender = showcaseProducts.length > 0 ? showcaseProducts : mockShowcase;
 
   return (
-    <section className="bg-white py-32 overflow-hidden">
-      <div className="flex flex-col xl:flex-row items-start xl:items-center">
-        <div className="pl-6 md:pl-16 mb-10 xl:mb-0 shrink-0">
-          <h3 className="font-display text-4xl md:text-6xl font-extrabold text-navy">
+    <section ref={ref} className="relative h-[400vh] bg-white">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <div className="pl-6 md:pl-16">
+          <h3 className="mb-10 font-display text-4xl md:text-6xl font-extrabold text-navy">
             Drop. <span className="text-blue">06</span>
           </h3>
         </div>
-        <div className="flex gap-8 pl-6 pr-6 overflow-x-auto snap-x snap-mandatory w-full py-8 pb-12" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <style dangerouslySetInnerHTML={{__html: `
-            .flex::-webkit-scrollbar { display: none; }
-          `}} />
+        <motion.div style={{ x }} className="flex gap-8 pl-6 pr-[20vw]">
           {itemsToRender.map((s: any) => {
              const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
              const isRealProduct = !!s.createdAt;
@@ -261,7 +258,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
               <Link
                 href={linkHref}
                 key={s.id}
-                className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 snap-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block"
+                className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block"
               >
                 <Image src={imageSrc} alt={s.name} fill sizes="(max-width: 768px) 80vw, 480px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
@@ -274,7 +271,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
               </Link>
              );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
