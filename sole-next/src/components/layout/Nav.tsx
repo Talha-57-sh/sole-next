@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Heart, MessageCircle, ShoppingBag, Menu, X, Home } from "lucide-react";
@@ -11,40 +11,15 @@ import { useSearch } from "@/hooks/useSearch";
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const { itemCount, openCart } = useCart();
   const [mounted, setMounted] = useState(false);
-
-  // Search state
-  const [localQuery, setLocalQuery] = useState("");
-  const setGlobalQuery = useSearch((s) => s.setQuery);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleSearchChange = useCallback(
-    (value: string) => {
-      setLocalQuery(value);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        setGlobalQuery(value.trim());
-      }, 250);
-    },
-    [setGlobalQuery]
-  );
-
-  const clearSearch = useCallback(() => {
-    setLocalQuery("");
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setGlobalQuery("");
-  }, [setGlobalQuery]);
+  const openSearch = useSearch((s) => s.openSearch);
 
   useEffect(() => {
     setMounted(true);
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
@@ -66,28 +41,22 @@ export default function Nav() {
             SOLE
           </Link>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden md:flex items-center bg-background border border-border rounded-full px-4 py-2 w-1/3 min-w-[250px] focus-within:border-accent transition-colors">
-            <Search size={18} className="text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search for a shoe..." 
-              value={localQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="bg-transparent border-none outline-none ml-3 w-full text-sm text-text placeholder-muted"
-            />
-            {localQuery && (
-              <button onClick={clearSearch} className="p-1 text-muted hover:text-text transition-colors flex-shrink-0">
-                <X size={14} />
-              </button>
-            )}
+          {/* Desktop Search Icon */}
+          <div className="hidden md:flex items-center">
+            <button 
+              onClick={openSearch} 
+              className="p-2 text-text flex items-center justify-center rounded-full border border-border bg-background hover:border-accent transition-colors gap-2 px-4"
+            >
+              <Search size={18} className="text-muted" />
+              <span className="text-sm text-muted font-medium">Search...</span>
+            </button>
           </div>
 
           {/* Right Actions */}
           <ul className="flex items-center gap-4">
             {/* Mobile Search Icon */}
             <li className="md:hidden">
-              <button onClick={() => setSearchOpen(!searchOpen)} className="p-2 text-text flex items-center justify-center rounded-full border border-border bg-background hover:border-accent transition-colors">
+              <button onClick={openSearch} className="p-2 text-text flex items-center justify-center rounded-full border border-border bg-background hover:border-accent transition-colors">
                 <Search size={18} />
               </button>
             </li>
@@ -117,34 +86,6 @@ export default function Nav() {
             </li>
           </ul>
         </div>
-
-        {/* Mobile Search Overlay */}
-        <AnimatePresence>
-          {searchOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden border-t border-border overflow-hidden bg-white px-6 py-4"
-            >
-              <div className="flex items-center bg-background border border-border rounded-full px-4 py-2 w-full focus-within:border-accent transition-colors">
-                <Search size={18} className="text-muted" />
-                <input 
-                  type="text" 
-                  placeholder="Search for a shoe..." 
-                  value={localQuery}
-                  onChange={(e) => handleSearchChange(e.target.value)}
-                  className="bg-transparent border-none outline-none ml-3 w-full text-sm text-text placeholder-muted"
-                />
-                {localQuery && (
-                  <button onClick={clearSearch} className="p-1 text-muted hover:text-text transition-colors flex-shrink-0">
-                    <X size={14} />
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </nav>
 
       {/* Mobile Side Drawer (Hamburger Menu) */}
@@ -172,7 +113,7 @@ export default function Nav() {
                 </button>
               </div>
               <div className="flex flex-col gap-6">
-                <Link href="#products" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Shop Collection</Link>
+                <Link href="/#products" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Shop Collection</Link>
                 <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Categories</Link>
                 <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Track Order</Link>
                 <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Return Policy</Link>
@@ -194,7 +135,7 @@ export default function Nav() {
           <Home size={22} />
           <span className="text-[10px] uppercase tracking-wider">Home</span>
         </Link>
-        <button onClick={() => { setSearchOpen(!searchOpen); window.scrollTo({top:0, behavior:'smooth'}); }} className="flex flex-col items-center gap-1 p-2 text-muted hover:text-accent transition-colors">
+        <button onClick={openSearch} className="flex flex-col items-center gap-1 p-2 text-muted hover:text-accent transition-colors">
           <Search size={22} />
           <span className="text-[10px] uppercase tracking-wider">Search</span>
         </button>
@@ -215,4 +156,3 @@ export default function Nav() {
     </>
   );
 }
-

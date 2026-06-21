@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
+import SearchOverlay from "@/components/layout/SearchOverlay";
 
 const dmSans = DM_Sans({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
       <body className={`${dmSans.className} bg-background text-text font-sans antialiased`}>
         <Nav />
         <CartDrawer />
+        <SearchOverlay />
         <main className="min-h-screen pt-20">
           {children}
         </main>
