@@ -39,14 +39,7 @@ export function RevealText({ children, className = "" }: { children: string; cla
   );
 }
 
-/* -------------------- HERO -------------------- */
-const polaroids = [
-  { img: SHOE_4, label: "RUNNERS", rotate: -18, color: "#fee2e2" },
-  { img: SHOE_2, label: "COURT", rotate: -8, color: "#dbeafe" },
-  { img: SHOE_1, label: "CLASSICS", rotate: 4, color: "#fce7f3" },
-  { img: SHOE_3, label: "RETRO", rotate: 14, color: "#fef3c7" },
-  { img: SHOE_5, label: "NOIR", rotate: 22, color: "#e5e7eb" },
-];
+
 
 export function useScrollFlip(ref: React.RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
@@ -100,10 +93,11 @@ export function LandingHero() {
           {/* Shoe Image layered on top of text */}
           <div className="absolute left-1/2 top-1/2 z-10 w-[260px] lg:w-[640px] -translate-x-1/2 -translate-y-[60%] pointer-events-none">
             <Image
-              src="/assets/jordan.png"
-              alt="Air Jordan 1"
-              width={640}
-              height={640}
+              src="/assets/air-jordan.png"
+              alt="Nike Air Jordan 1 White"
+              width={600}
+              height={400}
+              priority
               className="w-full h-auto drop-shadow-2xl"
               style={{
                 transform: `rotateY(${rotateY}deg) rotate(-15deg)`,
@@ -165,31 +159,7 @@ export function LandingHero() {
         </motion.div>
       </motion.div>
 
-      {/* Hidden Polaroid stack for backwards compatibility if needed, placed in background */}
-      <div className="absolute right-0 top-1/2 -z-0 opacity-10 blur-sm pointer-events-none hidden lg:block">
-        <div className="relative mx-auto h-[520px] w-[520px]">
-          {polaroids.map((p, i) => {
-            const offset = i - 2;
-            return (
-              <div
-                key={p.label}
-                style={{
-                  left: `calc(50% + ${offset * 38}px - 130px)`,
-                  top: `calc(50% - 170px)`,
-                  background: p.color,
-                  zIndex: i,
-                  transform: `rotate(${p.rotate}deg)`
-                }}
-                className="absolute h-[340px] w-[260px] rounded-[6px] bg-white p-3 pb-12 shadow-[0_25px_60px_-20px_rgba(11,26,51,0.45)]"
-              >
-                <div className="relative h-full w-full overflow-hidden rounded-sm" style={{ background: p.color }}>
-                  <Image src={p.img} alt={p.label} fill sizes="260px" className="object-cover" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+
     </section>
   );
 }
@@ -254,10 +224,6 @@ export function FeaturedPinned() {
 
 /* -------------------- HORIZONTAL SHOWCASE -------------------- */
 export function HorizontalShowcase({ products }: { products: Product[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-72%"]);
-  
   // Use up to 5 actual products from Firebase for the horizontal showcase
   const showcaseProducts = products.slice(0, 5);
   // Fallbacks if db is empty or has < 5 products
@@ -272,14 +238,17 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
   const itemsToRender = showcaseProducts.length > 0 ? showcaseProducts : mockShowcase;
 
   return (
-    <section ref={ref} className="relative h-[400vh] bg-white">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <div className="pl-6 md:pl-16">
-          <h3 className="mb-10 font-display text-4xl md:text-6xl font-extrabold text-navy">
+    <section className="bg-white py-32 overflow-hidden">
+      <div className="flex flex-col xl:flex-row items-start xl:items-center">
+        <div className="pl-6 md:pl-16 mb-10 xl:mb-0 shrink-0">
+          <h3 className="font-display text-4xl md:text-6xl font-extrabold text-navy">
             Drop. <span className="text-blue">06</span>
           </h3>
         </div>
-        <motion.div style={{ x }} className="flex gap-8 pl-6 pr-[20vw]">
+        <div className="flex gap-8 pl-6 pr-6 overflow-x-auto snap-x snap-mandatory w-full py-8 pb-12" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            .flex::-webkit-scrollbar { display: none; }
+          `}} />
           {itemsToRender.map((s: any) => {
              const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
              const isRealProduct = !!s.createdAt;
@@ -288,7 +257,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
               <Link
                 href={linkHref}
                 key={s.id}
-                className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block"
+                className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 snap-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block"
               >
                 <Image src={imageSrc} alt={s.name} fill sizes="(max-width: 768px) 80vw, 480px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
@@ -301,7 +270,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
               </Link>
              );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
