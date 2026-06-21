@@ -81,7 +81,7 @@ export function LandingHero() {
               y: yOffset,
               rotateZ: -25
             }}
-            className="absolute z-20 left-4 lg:-left-20 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+            className="absolute z-20 -left-10 lg:-left-48 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/air-jordan.png"
@@ -100,7 +100,7 @@ export function LandingHero() {
               y: yOffset,
               rotateZ: 15
             }}
-            className="absolute z-20 right-4 lg:-right-20 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+            className="absolute z-20 -right-10 lg:-right-48 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/red-jordan.png"
