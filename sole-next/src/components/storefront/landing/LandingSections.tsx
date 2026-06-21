@@ -74,20 +74,39 @@ export function LandingHero() {
         </motion.span>
 
         <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
-          {/* Shoe Image floating dynamically in front of the massive text */}
+          {/* Left Shoe (White Jordan) floating left of text */}
           <motion.div 
             style={{ 
               rotateX,
               y: yOffset,
               rotateZ: -25
             }}
-            className="absolute z-20 w-[340px] lg:w-[680px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+            className="absolute z-20 left-4 lg:-left-20 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/air-jordan.png"
               alt="Nike Air Jordan 1 White"
-              width={680}
-              height={450}
+              width={480}
+              height={320}
+              priority
+              className="w-full h-auto"
+            />
+          </motion.div>
+
+          {/* Right Shoe (Red Jordan) floating right of text */}
+          <motion.div 
+            style={{ 
+              rotateX,
+              y: yOffset,
+              rotateZ: 15
+            }}
+            className="absolute z-20 right-4 lg:-right-20 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+          >
+            <Image
+              src="/assets/red-jordan.png"
+              alt="Nike Air Jordan 1 Red"
+              width={480}
+              height={320}
               priority
               className="w-full h-auto"
             />
