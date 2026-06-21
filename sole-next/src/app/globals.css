@@ -18,7 +18,8 @@
   --color-gradient-1: var(--gradient-1);
   --color-gradient-2: var(--gradient-2);
   --color-gradient-3: var(--gradient-3);
-  --font-sans: var(--font-dm-sans), sans-serif;
+  --font-sans: var(--font-manrope), sans-serif;
+  --font-display: var(--font-sora), sans-serif;
 }
 
 :root {
