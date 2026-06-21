@@ -74,14 +74,14 @@ export function LandingHero() {
         </motion.span>
 
         <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
-          {/* Left Shoe (White Jordan) floating left of text */}
+          {/* Left Shoe (White Jordan) floating top-left on mobile, left on desktop */}
           <motion.div 
             style={{ 
               rotateX,
               y: yOffset,
               rotateZ: -25
             }}
-            className="absolute z-20 -left-10 lg:-left-48 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+            className="absolute z-20 -left-4 top-0 lg:top-1/2 lg:-translate-y-1/2 lg:-left-48 w-[160px] md:w-[240px] lg:w-[480px] pointer-events-none drop-shadow-[0_20px_20px_rgba(0,0,0,0.35)] lg:drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/air-jordan.png"
@@ -93,14 +93,14 @@ export function LandingHero() {
             />
           </motion.div>
 
-          {/* Right Shoe (Red Jordan) floating right of text */}
+          {/* Right Shoe (Red Jordan) floating bottom-right on mobile, right on desktop */}
           <motion.div 
             style={{ 
               rotateX,
               y: yOffset,
               rotateZ: 15
             }}
-            className="absolute z-20 -right-10 lg:-right-48 top-1/2 -translate-y-1/2 w-[200px] lg:w-[480px] pointer-events-none drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
+            className="absolute z-20 -right-4 bottom-0 lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:-right-48 w-[160px] md:w-[240px] lg:w-[480px] pointer-events-none drop-shadow-[0_20px_20px_rgba(0,0,0,0.35)] lg:drop-shadow-[0_45px_45px_rgba(0,0,0,0.35)]"
           >
             <Image
               src="/assets/red-jordan.png"
