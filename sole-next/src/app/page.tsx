@@ -24,7 +24,7 @@ export default async function Home() {
   const categories = Array.from(new Set(products.map(p => p.category || p.tag).filter(Boolean))) as string[];
 
   return (
-    <div className="flex flex-col min-h-screen overflow-x-hidden">
+    <div className="flex flex-col min-h-screen">
       <LandingHero />
       <Marquee />
       <FeaturedPinned />
