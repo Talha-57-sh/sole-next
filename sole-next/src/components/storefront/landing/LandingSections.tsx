@@ -74,14 +74,14 @@ export function LandingHero() {
         </motion.span>
 
         <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
-          {/* Shoe Image layered perfectly in the center of the text */}
+          {/* Shoe Image layered perfectly behind the text */}
           <motion.div 
             style={{ 
               rotateX,
               y: yOffset,
               rotateZ: -15
             }}
-            className="absolute z-10 w-[300px] lg:w-[600px] pointer-events-none"
+            className="absolute z-0 w-[300px] lg:w-[600px] pointer-events-none"
           >
             <Image
               src="/assets/air-jordan.png"
@@ -93,14 +93,14 @@ export function LandingHero() {
             />
           </motion.div>
 
-          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy">
+          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy relative z-10">
             {headingWords.map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
                   initial={{ y: "110%", filter: "blur(8px)" }}
                   animate={{ y: 0, filter: "blur(0px)" }}
                   transition={{ duration: 1, delay: 0.1 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="inline-block relative z-0"
+                  className="inline-block"
                 >
                   {word}
                 </motion.span>
