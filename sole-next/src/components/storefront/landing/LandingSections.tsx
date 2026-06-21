@@ -41,32 +41,16 @@ export function RevealText({ children, className = "" }: { children: string; cla
 
 
 
-export function useScrollFlip(ref: React.RefObject<HTMLElement | null>) {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      const height = rect.height;
-      const scrolled = -rect.top;
-      let p = scrolled / height;
-      if (p < 0) p = 0;
-      if (p > 1) p = 1;
-      setProgress(p);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [ref]);
-
-  return progress;
-}
-
 export function LandingHero() {
   const ref = useRef<HTMLDivElement>(null);
-  const progress = useScrollFlip(ref);
-  const rotateY = progress * 360;
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
+  
+  // A clean kickflip (rotateX) animation that doesn't cause flat mirroring, combined with an upward float
+  const rotateX = useTransform(scrollYProgress, [0, 1], [0, 360]);
+  const yOffset = useTransform(scrollYProgress, [0, 1], ["0%", "-30%"]);
   
   const headingWords = ["Step", "Different."];
 
@@ -78,20 +62,27 @@ export function LandingHero() {
         <div className="absolute top-1/2 right-0 h-[400px] w-[400px] rounded-full bg-pink-200/40 blur-3xl" />
       </div>
 
-      <motion.div className="z-10 flex flex-col items-center">
+      <motion.div className="z-10 flex flex-col items-center w-full">
         <motion.span
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur"
+          className="inline-flex items-center gap-2 rounded-full border border-navy/10 bg-white/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-blue backdrop-blur mb-10"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-blue animate-pulse" />
           New season styles
         </motion.span>
 
-        <div className="relative mt-6" style={{ perspective: "1200px" }}>
-          {/* Shoe Image layered on top of text */}
-          <div className="absolute left-1/2 top-1/2 z-10 w-[260px] lg:w-[640px] -translate-x-1/2 -translate-y-[60%] pointer-events-none">
+        <div className="relative flex justify-center items-center w-full max-w-5xl" style={{ perspective: "1200px" }}>
+          {/* Shoe Image layered perfectly in the center of the text */}
+          <motion.div 
+            style={{ 
+              rotateX,
+              y: yOffset,
+              rotateZ: -15
+            }}
+            className="absolute z-10 w-[300px] lg:w-[600px] pointer-events-none"
+          >
             <Image
               src="/assets/air-jordan.png"
               alt="Nike Air Jordan 1 White"
@@ -99,15 +90,10 @@ export function LandingHero() {
               height={400}
               priority
               className="w-full h-auto drop-shadow-2xl"
-              style={{
-                transform: `rotateY(${rotateY}deg) rotate(-15deg)`,
-                willChange: "transform",
-                transition: "transform 0.05s linear",
-              }}
             />
-          </div>
+          </motion.div>
 
-          <h1 className="font-display text-7xl lg:text-9xl font-black leading-[0.95] tracking-[-0.04em] text-navy">
+          <h1 className="font-display text-[5.5rem] lg:text-[11rem] font-black leading-[0.85] tracking-[-0.04em] text-navy">
             {headingWords.map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
@@ -127,7 +113,7 @@ export function LandingHero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.6 }}
-          className="mt-8 max-w-xl text-lg text-navy/70"
+          className="mt-10 max-w-xl text-lg text-navy/70"
         >
           Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
         </motion.p>
@@ -158,7 +144,6 @@ export function LandingHero() {
           </a>
         </motion.div>
       </motion.div>
-
 
     </section>
   );
