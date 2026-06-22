@@ -145,9 +145,9 @@ export default function SearchOverlay() {
                       const images = product.images?.length ? product.images : (product.img ? [product.img] : []);
                       const coverImg = images[0] || '';
                       
-                      // Using 'any' cast here in case 'salePrice' was added loosely
-                      const hasSale = (product as any).salePrice !== undefined;
-                      const displayPrice = hasSale ? (product as any).salePrice : product.price;
+                      // Using Record<string, unknown> cast here in case 'salePrice' was added loosely
+                      const hasSale = (product as Record<string, unknown>).salePrice !== undefined;
+                      const displayPrice = hasSale ? (product as Record<string, unknown>).salePrice : product.price;
 
                       return (
                         <Link

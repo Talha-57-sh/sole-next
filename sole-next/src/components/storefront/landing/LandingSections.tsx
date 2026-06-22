@@ -71,7 +71,7 @@ export function LandingHero() {
             transition={{ delay: 0.7, duration: 0.6 }}
             className="mt-8 max-w-md text-lg text-navy/70"
           >
-            Premium men's and women's footwear, shipped quickly across Pakistan — while stocks last.
+            Premium men&apos;s and women&apos;s footwear, shipped quickly across Pakistan — while stocks last.
           </motion.p>
 
           <motion.div
@@ -227,9 +227,9 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
           className="flex gap-5 overflow-x-auto pb-6 pl-6 pr-6 snap-x snap-mandatory"
           style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
         >
-          {itemsToRender.map((s: any) => {
-            const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
-            const isRealProduct = !!s.createdAt;
+          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string }) => {
+            const imageSrc = "images" in s && s.images?.length ? s.images[0] : ("img" in s ? s.img : SHOE_1);
+            const isRealProduct = "createdAt" in s && !!s.createdAt;
             const linkHref = isRealProduct ? `/product/${s.id}` : '#';
             return (
               <Link href={linkHref} key={s.id} className="group relative h-[60vh] w-[78vw] shrink-0 snap-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_25px_50px_-20px_rgba(11,26,51,0.3)] block">
@@ -259,9 +259,9 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
           </h3>
         </div>
         <motion.div style={{ x, willChange: "transform" }} className="flex gap-8 pl-6 pr-[20vw]">
-          {itemsToRender.map((s: any) => {
-            const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
-            const isRealProduct = !!s.createdAt;
+          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string }) => {
+            const imageSrc = "images" in s && s.images?.length ? s.images[0] : ("img" in s ? s.img : SHOE_1);
+            const isRealProduct = "createdAt" in s && !!s.createdAt;
             const linkHref = isRealProduct ? `/product/${s.id}` : '#';
             return (
               <Link href={linkHref} key={s.id} className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block">
