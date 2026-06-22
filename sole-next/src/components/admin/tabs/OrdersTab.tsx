@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { Order } from "@/lib/types";
 import Image from "next/image";
 
@@ -34,6 +34,18 @@ export default function OrdersTab() {
     }
   };
 
+  const handleClearAll = async () => {
+    if (window.confirm("Are you sure you want to clear ALL orders? This action cannot be undone.")) {
+      try {
+        const promises = orders.map(order => deleteDoc(doc(db, "orders", order.id)));
+        await Promise.all(promises);
+      } catch (error) {
+        console.error("Error clearing orders:", error);
+        alert("Failed to clear orders.");
+      }
+    }
+  };
+
   const filteredOrders = statusFilter === "all" ? orders : orders.filter(o => o.status === statusFilter);
 
   if (loading) return <div>Loading orders...</div>;
@@ -41,7 +53,17 @@ export default function OrdersTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center bg-panel p-4 rounded border border-border">
-        <h2 className="text-lg font-bold tracking-widest uppercase">Orders ({filteredOrders.length})</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-bold tracking-widest uppercase">Orders ({filteredOrders.length})</h2>
+          {orders.length > 0 && (
+            <button 
+              onClick={handleClearAll}
+              className="px-3 py-1 bg-red text-white text-xs font-bold uppercase rounded hover:bg-red/90 transition-colors"
+            >
+              Clear All
+            </button>
+          )}
+        </div>
         <select 
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -51,6 +73,7 @@ export default function OrdersTab() {
           <option value="pending">Pending</option>
           <option value="confirmed">Confirmed</option>
           <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
           <option value="cancelled">Cancelled</option>
         </select>
       </div>
@@ -80,12 +103,14 @@ export default function OrdersTab() {
                         className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded border-2 outline-none
                           ${order.status === 'pending' ? 'border-orange text-orange' : 
                             order.status === 'confirmed' ? 'border-blue-500 text-blue-500' :
-                            order.status === 'shipped' ? 'border-green text-green' :
+                            order.status === 'shipped' ? 'border-accent text-accent' :
+                            order.status === 'delivered' ? 'border-green text-green' :
                             'border-red text-red'}`}
                       >
                         <option value="pending">Pending</option>
                         <option value="confirmed">Confirmed</option>
                         <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
                       </select>
                     </div>

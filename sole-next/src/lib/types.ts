@@ -39,7 +39,7 @@ export interface Order {
   total: number;
   paymentMethod: string;
   paymentScreenshotUrl?: string | null;
-  status: 'pending' | 'confirmed' | 'shipped' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   createdAt?: unknown;
 }
 
