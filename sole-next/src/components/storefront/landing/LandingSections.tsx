@@ -31,7 +31,7 @@ export function LandingHero() {
   const shoeRotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
 
   return (
-    <section ref={heroRef} className="relative min-h-screen pt-32 pb-20 px-6">
+    <section ref={heroRef} className="relative min-h-screen pt-16 md:pt-32 pb-20 px-6">
       {/* background glows */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue/30 blur-3xl" />
