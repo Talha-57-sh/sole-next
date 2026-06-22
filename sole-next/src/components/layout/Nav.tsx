@@ -15,7 +15,7 @@ export default function Nav() {
   const { itemCount, openCart } = useCart();
   const [mounted, setMounted] = useState(false);
   const openSearch = useSearch((s) => s.openSearch);
-  const { wishlist } = useWishlist();
+  const { wishlist, openWishlist } = useWishlist();
 
   useEffect(() => {
     setMounted(true);
@@ -71,7 +71,7 @@ export default function Nav() {
             </li>
 
             <li className="hidden md:block">
-              <Link href="#" className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted hover:text-text transition-colors">
+              <button onClick={openWishlist} className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted hover:text-text transition-colors">
                 <div className="relative">
                   <Heart size={18} />
                   {mounted && wishlist.length > 0 && (
@@ -81,7 +81,7 @@ export default function Nav() {
                   )}
                 </div>
                 <span>Wishlist</span>
-              </Link>
+              </button>
             </li>
             
             <li className="hidden md:block">

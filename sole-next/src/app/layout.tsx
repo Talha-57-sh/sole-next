@@ -5,6 +5,7 @@ import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
 import SearchOverlay from "@/components/layout/SearchOverlay";
+import WishlistDrawer from "@/components/layout/WishlistDrawer";
 import { SmoothScroll } from "@/components/storefront/landing/SmoothScroll";
 import { WishlistProvider } from "@/context/WishlistContext";
 
@@ -28,6 +29,7 @@ export default function RootLayout({
           <SmoothScroll />
           <Nav />
           <CartDrawer />
+          <WishlistDrawer />
           <SearchOverlay />
           <main className="min-h-screen pt-20">
             {children}

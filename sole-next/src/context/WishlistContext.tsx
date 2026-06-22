@@ -8,12 +8,16 @@ interface WishlistContextType {
   addToWishlist: (product: Product) => void;
   removeFromWishlist: (productId: string) => void;
   isInWishlist: (productId: string) => boolean;
+  isWishlistOpen: boolean;
+  openWishlist: () => void;
+  closeWishlist: () => void;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   // Load from local storage on mount to handle hydration safely
@@ -51,12 +55,25 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     return wishlist.some((p) => p.id === productId);
   };
 
+  const openWishlist = () => {
+    if (typeof window !== "undefined") document.body.style.overflow = "hidden";
+    setIsWishlistOpen(true);
+  };
+
+  const closeWishlist = () => {
+    if (typeof window !== "undefined") document.body.style.overflow = "";
+    setIsWishlistOpen(false);
+  };
+
   // Provide an empty wishlist before hydration completes to avoid SSR mismatch
   const value = {
     wishlist: isMounted ? wishlist : [],
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
+    isWishlistOpen,
+    openWishlist,
+    closeWishlist,
   };
 
   return (
