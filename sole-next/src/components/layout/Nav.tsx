@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Heart, MessageCircle, ShoppingBag, Menu, X, Home } from "lucide-react";
+import { Search, Heart, MessageCircle, ShoppingBag, Menu, X, Home, Package } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useSearch } from "@/hooks/useSearch";
 
@@ -62,6 +62,13 @@ export default function Nav() {
             </li>
 
             <li className="hidden md:block">
+              <Link href="/track" className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted hover:text-text transition-colors">
+                <Package size={18} />
+                <span>Track Order</span>
+              </Link>
+            </li>
+
+            <li className="hidden md:block">
               <Link href="#" className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted hover:text-text transition-colors">
                 <Heart size={18} />
                 <span>Wishlist</span>
@@ -115,7 +122,7 @@ export default function Nav() {
               <div className="flex flex-col gap-6">
                 <Link href="/#products" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Shop Collection</Link>
                 <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Categories</Link>
-                <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Track Order</Link>
+                <Link href="/track" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Track Order</Link>
                 <Link href="#" className="text-lg font-medium text-text uppercase tracking-widest" onClick={() => setMobileMenuOpen(false)}>Return Policy</Link>
               </div>
               <div className="mt-auto pb-8">

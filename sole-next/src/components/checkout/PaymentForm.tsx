@@ -16,6 +16,8 @@ export default function PaymentForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "sadapay" | "bank">("cod");
   const [file, setFile] = useState<File | null>(null);
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Double-submission guard idempotency key
@@ -31,6 +33,42 @@ export default function PaymentForm() {
     }
   };
 
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const val = e.target.value.trim();
+    if (!val) {
+      setEmailError("");
+      return;
+    }
+    if (!val.includes('@')) {
+      setEmailError("Please enter a valid email address (e.g. name@gmail.com)");
+      return;
+    }
+    const parts = val.split('@');
+    if (parts.length !== 2 || !parts[1].includes('.')) {
+      setEmailError("Please enter a valid email address.");
+      return;
+    }
+    setEmailError("");
+  };
+
+  const handlePhoneBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const val = e.target.value.trim();
+    if (!val) {
+      setPhoneError("");
+      return;
+    }
+    let cleaned = val.replace(/[\s-]/g, '');
+    if (cleaned.startsWith('+92')) cleaned = '0' + cleaned.substring(3);
+    else if (cleaned.startsWith('0092')) cleaned = '0' + cleaned.substring(4);
+    else if (cleaned.startsWith('92')) cleaned = '0' + cleaned.substring(2);
+    
+    if (!cleaned.startsWith('03') || cleaned.length !== 11) {
+      setPhoneError("Please enter a valid 11-digit Pakistani phone number (e.g. 0300 1234567)");
+      return;
+    }
+    setPhoneError("");
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
@@ -44,12 +82,46 @@ export default function PaymentForm() {
       return;
     }
 
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+
+    let hasError = false;
+
+    // Email validation
+    if (!email.includes('@')) {
+      setEmailError("Please enter a valid email address (e.g. name@gmail.com)");
+      hasError = true;
+    } else {
+      const parts = email.split('@');
+      if (parts.length !== 2 || !parts[1].includes('.')) {
+        setEmailError("Please enter a valid email address.");
+        hasError = true;
+      } else {
+        setEmailError("");
+      }
+    }
+
+    // Phone validation
+    let cleanedPhone = phone.replace(/[\s-]/g, '');
+    if (cleanedPhone.startsWith('+92')) cleanedPhone = '0' + cleanedPhone.substring(3);
+    else if (cleanedPhone.startsWith('0092')) cleanedPhone = '0' + cleanedPhone.substring(4);
+    else if (cleanedPhone.startsWith('92')) cleanedPhone = '0' + cleanedPhone.substring(2);
+    
+    if (!cleanedPhone.startsWith('03') || cleanedPhone.length !== 11) {
+      setPhoneError("Please enter a valid 11-digit Pakistani phone number (e.g. 0300 1234567)");
+      hasError = true;
+    } else {
+      setPhoneError("");
+    }
+
+    if (hasError) return;
+
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData(e.currentTarget);
       const customer = {
-        email: formData.get("email") as string,
+        email,
         fname: formData.get("fname") as string,
         lname: formData.get("lname") as string,
         address: formData.get("address") as string,
@@ -110,7 +182,8 @@ export default function PaymentForm() {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Email</label>
-            <input name="email" type="email" required className="w-full border border-border rounded px-4 py-3 bg-panel focus:outline-none focus:border-navy transition-colors" placeholder="Email address" />
+            <input name="email" type="email" required onBlur={handleEmailBlur} className={`w-full border ${emailError ? 'border-red' : 'border-border'} rounded px-4 py-3 bg-panel focus:outline-none focus:border-navy transition-colors`} placeholder="Email address" />
+            {emailError && <p className="text-red text-xs mt-1 font-medium">{emailError}</p>}
           </div>
         </div>
       </section>
@@ -145,7 +218,8 @@ export default function PaymentForm() {
           </div>
           <div>
             <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-1">Phone</label>
-            <input name="phone" type="tel" required className="w-full border border-border rounded px-4 py-3 bg-panel focus:outline-none focus:border-navy transition-colors" placeholder="Phone number" />
+            <input name="phone" type="tel" required onBlur={handlePhoneBlur} className={`w-full border ${phoneError ? 'border-red' : 'border-border'} rounded px-4 py-3 bg-panel focus:outline-none focus:border-navy transition-colors`} placeholder="Phone number" />
+            {phoneError && <p className="text-red text-xs mt-1 font-medium">{phoneError}</p>}
           </div>
         </div>
       </section>

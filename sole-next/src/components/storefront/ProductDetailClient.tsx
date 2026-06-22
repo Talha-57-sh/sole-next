@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, ShoppingBag, Check } from "lucide-react";
 import { Product } from "@/lib/types";
 import { useCart } from "@/hooks/useCart";
+import Modal from "@/components/ui/Modal";
 
 interface Props {
   product: Product;
@@ -15,6 +16,7 @@ export default function ProductDetailClient({ product }: Props) {
   const { addToCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
   const images = product.images?.length
     ? product.images
@@ -174,9 +176,17 @@ export default function ProductDetailClient({ product }: Props) {
 
           {/* Size Selector */}
           <div className="mb-8">
-            <h2 className="text-sm font-bold uppercase tracking-widest text-navy mb-3">
-              Select Size (EU)
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold uppercase tracking-widest text-navy">
+                Select Size (EU)
+              </h2>
+              <button
+                onClick={() => setIsSizeChartOpen(true)}
+                className="text-xs font-bold uppercase tracking-widest text-muted hover:text-navy underline transition-colors"
+              >
+                Size Guide
+              </button>
+            </div>
             <div className="flex flex-wrap gap-2">
               {product.sizes.map((s) => {
                 const qty = hasSizeStock
@@ -251,6 +261,70 @@ export default function ProductDetailClient({ product }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Size Chart Modal */}
+      <Modal
+        isOpen={isSizeChartOpen}
+        onClose={() => setIsSizeChartOpen(false)}
+        title="Size Guide"
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead>
+              <tr className="border-b border-border bg-panel">
+                <th className="py-3 px-4 font-bold uppercase tracking-wider text-xs text-navy">UK</th>
+                <th className="py-3 px-4 font-bold uppercase tracking-wider text-xs text-navy">US</th>
+                <th className="py-3 px-4 font-bold uppercase tracking-wider text-xs text-navy">EU</th>
+                <th className="py-3 px-4 font-bold uppercase tracking-wider text-xs text-navy">Foot Length (cm)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">6</td>
+                <td className="py-3 px-4">7</td>
+                <td className="py-3 px-4">39/40</td>
+                <td className="py-3 px-4">24.5</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">7</td>
+                <td className="py-3 px-4">8</td>
+                <td className="py-3 px-4">41</td>
+                <td className="py-3 px-4">25.5</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">8</td>
+                <td className="py-3 px-4">9</td>
+                <td className="py-3 px-4">42</td>
+                <td className="py-3 px-4">26.5</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">9</td>
+                <td className="py-3 px-4">10</td>
+                <td className="py-3 px-4">43</td>
+                <td className="py-3 px-4">27.5</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">10</td>
+                <td className="py-3 px-4">11</td>
+                <td className="py-3 px-4">44</td>
+                <td className="py-3 px-4">28.5</td>
+              </tr>
+              <tr className="border-b border-border hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">11</td>
+                <td className="py-3 px-4">12</td>
+                <td className="py-3 px-4">45</td>
+                <td className="py-3 px-4">29.5</td>
+              </tr>
+              <tr className="hover:bg-panel/50 transition-colors">
+                <td className="py-3 px-4 font-medium">12</td>
+                <td className="py-3 px-4">13</td>
+                <td className="py-3 px-4">46</td>
+                <td className="py-3 px-4">30.5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -42,6 +42,15 @@ export interface Order {
   createdAt?: unknown;
 }
 
+export interface TrackingOrder {
+  id: string;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
+  items: { name: string; size: string; quantity: number }[];
+  total: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface Review {
   id: string;
   productName: string;
