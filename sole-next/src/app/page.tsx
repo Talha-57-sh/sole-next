@@ -6,7 +6,6 @@ import ProductGrid from "@/components/storefront/ProductGrid";
 import { 
   LandingHero, 
   Marquee, 
-  FeaturedPinned, 
   HorizontalShowcase, 
   CategoryParallax, 
   CtaBand 
@@ -27,7 +26,6 @@ export default async function Home() {
     <div className="flex flex-col min-h-screen">
       <LandingHero />
       <Marquee />
-      <FeaturedPinned />
       <HorizontalShowcase products={products} />
       <CategoryParallax />
       <CtaBand />

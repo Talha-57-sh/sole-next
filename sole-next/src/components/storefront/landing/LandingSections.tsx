@@ -183,7 +183,7 @@ export function Marquee() {
   );
 }
 
-/* -------------------- FEATURED PINNED -------------------- */
+/* -------------------- SHARED HOOKS -------------------- */
 function useIsMobile() {
   const [m, setM] = useState(false);
   useEffect(() => {
@@ -194,41 +194,6 @@ function useIsMobile() {
     return () => mq.removeEventListener("change", fn);
   }, []);
   return m;
-}
-
-export function FeaturedPinned() {
-  const ref = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.92, 1, 0.98]);
-  const textY = useTransform(scrollYProgress, [0, 1], [80, -80]);
-
-  return (
-    <section ref={ref} id="story" className="relative h-[180vh]">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden bg-gradient-to-b from-white to-[#EAF4FB]">
-        <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
-          <motion.div
-            style={{ scale: isMobile ? 1 : scale, willChange: "transform", transform: "translateZ(0)" }}
-            className="relative mx-auto aspect-square w-full max-w-[560px]"
-          >
-            <img src={SHOE_HERO} alt="Featured shoe" width={1200} height={1200} className="h-full w-full rounded-3xl object-cover shadow-[0_40px_80px_-30px_rgba(11,26,51,0.5)]" />
-          </motion.div>
-          <motion.div style={{ y: isMobile ? 0 : textY }}>
-            <span className="text-xs font-bold uppercase tracking-[0.3em] text-blue">Featured</span>
-            <h2 className="mt-4 font-display text-5xl md:text-7xl font-extrabold leading-[0.95] text-navy">
-              Engineered <br /> to <em className="font-display italic">move.</em>
-            </h2>
-            <p className="mt-6 max-w-md text-lg text-navy/70">
-              Cushioned soles. Breathable mesh. Hand-stitched detailing on every pair. Designed for the streets of Karachi, Lahore, and beyond.
-            </p>
-            <Link href="/#products" className="mt-8 inline-flex items-center gap-2 text-base font-semibold text-navy underline underline-offset-4">
-              Explore the collection <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
 }
 
 /* -------------------- HORIZONTAL SHOWCASE -------------------- */
