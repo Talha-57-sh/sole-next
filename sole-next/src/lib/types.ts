@@ -2,6 +2,7 @@ export interface Product {
   id: string; // Document ID
   name: string;
   price: number;
+  salePrice?: number;
   tag?: string;
   category?: string;
   desc?: string;

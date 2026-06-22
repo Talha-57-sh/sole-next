@@ -227,7 +227,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
           className="flex gap-5 overflow-x-auto pb-6 pl-6 pr-6 snap-x snap-mandatory"
           style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
         >
-          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string }) => {
+          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string, category?: string }) => {
             const imageSrc = "images" in s && s.images?.length ? s.images[0] : ("img" in s ? s.img : SHOE_1);
             const isRealProduct = "createdAt" in s && !!s.createdAt;
             const linkHref = isRealProduct ? `/product/${s.id}` : '#';
@@ -259,7 +259,7 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
           </h3>
         </div>
         <motion.div style={{ x, willChange: "transform" }} className="flex gap-8 pl-6 pr-[20vw]">
-          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string }) => {
+          {itemsToRender.map((s: Product | { img: string, name: string, price: number, tag: string, id: string, category?: string }) => {
             const imageSrc = "images" in s && s.images?.length ? s.images[0] : ("img" in s ? s.img : SHOE_1);
             const isRealProduct = "createdAt" in s && !!s.createdAt;
             const linkHref = isRealProduct ? `/product/${s.id}` : '#';
