@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag, Check } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Check, Heart } from "lucide-react";
+import { motion } from "framer-motion";
 import { Product } from "@/lib/types";
 import { useCart } from "@/hooks/useCart";
+import { useWishlist } from "@/context/WishlistContext";
 import Modal from "@/components/ui/Modal";
 
 interface Props {
@@ -14,9 +16,12 @@ interface Props {
 
 export default function ProductDetailClient({ product }: Props) {
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [added, setAdded] = useState(false);
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+
+  const inWishlist = isInWishlist(product.id);
 
   const images = product.images?.length
     ? product.images
@@ -147,10 +152,23 @@ export default function ProductDetailClient({ product }: Props) {
             {product.tag || product.category || "Footwear"}
           </span>
 
-          {/* Name */}
-          <h1 className="text-3xl md:text-4xl font-bold text-navy leading-tight mb-3">
-            {product.name}
-          </h1>
+          {/* Name & Wishlist */}
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-navy leading-tight">
+              {product.name}
+            </h1>
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={() => inWishlist ? removeFromWishlist(product.id) : addToWishlist(product)}
+              className="mt-1 p-2 rounded-full border border-border bg-white hover:border-navy hover:shadow-md transition-all flex-shrink-0"
+              aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+            >
+              <Heart 
+                size={24} 
+                className={`transition-colors ${inWishlist ? "fill-[#E53935] text-[#E53935]" : "text-muted hover:text-navy"}`} 
+              />
+            </motion.button>
+          </div>
 
           {/* Price */}
           <p className="text-2xl font-bold text-text mb-6">

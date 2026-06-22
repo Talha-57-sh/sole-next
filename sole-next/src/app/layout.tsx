@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import CartDrawer from "@/components/cart/CartDrawer";
 import SearchOverlay from "@/components/layout/SearchOverlay";
 import { SmoothScroll } from "@/components/storefront/landing/SmoothScroll";
+import { WishlistProvider } from "@/context/WishlistContext";
 
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
@@ -23,14 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${sora.variable} ${manrope.variable} ${manrope.className} bg-background text-text antialiased`}>
-        <SmoothScroll />
-        <Nav />
-        <CartDrawer />
-        <SearchOverlay />
-        <main className="min-h-screen pt-20">
-          {children}
-        </main>
-        <Footer />
+        <WishlistProvider>
+          <SmoothScroll />
+          <Nav />
+          <CartDrawer />
+          <SearchOverlay />
+          <main className="min-h-screen pt-20">
+            {children}
+          </main>
+          <Footer />
+        </WishlistProvider>
       </body>
     </html>
   );

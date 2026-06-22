@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Heart, MessageCircle, ShoppingBag, Menu, X, Home, Package } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useSearch } from "@/hooks/useSearch";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -14,6 +15,7 @@ export default function Nav() {
   const { itemCount, openCart } = useCart();
   const [mounted, setMounted] = useState(false);
   const openSearch = useSearch((s) => s.openSearch);
+  const { wishlist } = useWishlist();
 
   useEffect(() => {
     setMounted(true);
@@ -70,7 +72,14 @@ export default function Nav() {
 
             <li className="hidden md:block">
               <Link href="#" className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-muted hover:text-text transition-colors">
-                <Heart size={18} />
+                <div className="relative">
+                  <Heart size={18} />
+                  {mounted && wishlist.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-accent text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </div>
                 <span>Wishlist</span>
               </Link>
             </li>
