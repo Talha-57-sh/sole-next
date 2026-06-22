@@ -1,63 +1,37 @@
 "use client";
 
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import Image, { StaticImageData } from "next/image";
 import { MagneticButton } from "./MagneticButton";
 import { Product } from "@/lib/types";
 
-// Note: Ensure these assets are in public/assets/
-const SHOE_HERO = "/assets/shoe-hero.jpg";
 const SHOE_1 = "/assets/shoe-1.jpg";
 const SHOE_2 = "/assets/shoe-2.jpg";
 const SHOE_3 = "/assets/shoe-3.jpg";
 const SHOE_4 = "/assets/shoe-4.jpg";
 const SHOE_5 = "/assets/shoe-5.jpg";
+const SHOE_HERO = "/assets/shoe-hero.jpg";
 
-/* -------------------- REVEAL TEXT -------------------- */
-export function RevealText({ children, className = "" }: { children: string; className?: string }) {
-  const words = children.split(" ");
-  const ref = useRef<HTMLHeadingElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
-  return (
-    <h2 ref={ref} className={className}>
-      {words.map((w, i) => (
-        <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.25em]">
-          <motion.span
-            initial={{ y: "110%" }}
-            animate={inView ? { y: 0 } : {}}
-            transition={{ duration: 0.8, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-block"
-          >
-            {w}
-          </motion.span>
-        </span>
-      ))}
-    </h2>
-  );
-}
-
-/* -------------------- HERO -------------------- */
-const polaroids = [
-  { img: SHOE_4, label: "RUNNERS", rotate: -18, color: "#fee2e2" },
-  { img: SHOE_2, label: "COURT", rotate: -8, color: "#dbeafe" },
-  { img: SHOE_1, label: "CLASSICS", rotate: 4, color: "#fce7f3" },
-  { img: SHOE_3, label: "RETRO", rotate: 14, color: "#fef3c7" },
-  { img: SHOE_5, label: "NOIR", rotate: 22, color: "#e5e7eb" },
+const heroChips = [
+  { label: "Free Shipping", angle: -35 },
+  { label: "New Drop", angle: 30 },
+  { label: "PK Made", angle: 110 },
 ];
 
+/* -------------------- HERO -------------------- */
 export function LandingHero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const titleY = useTransform(scrollYProgress, [0, 1], [0, -120]);
-  const stackY = useTransform(scrollYProgress, [0, 1], [0, 180]);
-  const fan = useTransform(scrollYProgress, [0, 1], [1, 1.8]);
-  const headingWords = ["Step", "Different."];
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  // Smooth 360° scroll-linked rotation of the shoe
+  const shoeRotate = useTransform(scrollYProgress, [0, 1], [0, 360]);
 
   return (
-    <section ref={ref} className="relative min-h-screen pt-32 pb-20 px-6 overflow-hidden">
+    <section ref={heroRef} className="relative min-h-screen pt-32 pb-20 px-6">
       {/* background glows */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-blue/30 blur-3xl" />
@@ -65,7 +39,7 @@ export function LandingHero() {
       </div>
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-        <motion.div style={{ y: titleY }} className="z-10">
+        <div>
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -77,7 +51,7 @@ export function LandingHero() {
           </motion.span>
 
           <h1 className="mt-6 font-display text-[clamp(3.5rem,9vw,8rem)] font-extrabold leading-[0.95] tracking-[-0.04em] text-navy">
-            {headingWords.map((word, i) => (
+            {["Step", "Different."].map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
                   initial={{ y: "110%", filter: "blur(8px)" }}
@@ -106,63 +80,86 @@ export function LandingHero() {
             transition={{ delay: 0.9 }}
             className="mt-10 flex items-center gap-4"
           >
-            <Link href="#products" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+            <Link href="/#products" onClick={(e) => {
+              const elem = document.getElementById("products");
+              if (elem) {
+                e.preventDefault();
+                elem.scrollIntoView({ behavior: "smooth" });
+              }
             }}>
               <MagneticButton className="group inline-flex items-center gap-3 rounded-full bg-navy px-8 py-4 text-base font-semibold text-white shadow-[0_20px_50px_-15px_rgba(11,26,51,0.6)]">
                 Shop Now
-                <motion.span
-                  className="inline-flex"
-                  initial={{ x: 0 }}
-                  whileHover={{ x: 4 }}
-                >
+                <motion.span className="inline-flex" initial={{ x: 0 }} whileHover={{ x: 4 }}>
                   <ArrowRight className="h-5 w-5" />
                 </motion.span>
               </MagneticButton>
             </Link>
-            <a href="#story" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
-              See the story →
+            <a href="#drop" className="text-sm font-semibold text-navy/70 underline-offset-4 hover:underline">
+              See the drop →
             </a>
           </motion.div>
-        </motion.div>
+        </div>
 
-        {/* Polaroid stack */}
-        <motion.div
-          style={{ y: stackY, scale: fan }}
-          className="relative mx-auto h-[520px] w-full max-w-[520px]"
-        >
-          {polaroids.map((p, i) => {
-            const offset = i - 2;
+        {/* Spotlight shoe — centered inside the ring, rotates with scroll */}
+        <div className="relative mx-auto aspect-square w-full max-w-[520px]">
+          {/* rotating dashed ring (ambient) */}
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            className="absolute inset-4 rounded-full border-2 border-dashed border-navy/20"
+          />
+          {/* halo */}
+          <motion.div
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute inset-10 rounded-full bg-gradient-to-br from-blue/40 via-white/30 to-pink-200/40 blur-2xl"
+          />
+          {/* spotlight disc */}
+          <div className="absolute inset-8 rounded-full bg-gradient-to-br from-white to-[#EAF4FB] shadow-[inset_0_-30px_60px_rgba(11,26,51,0.08),0_40px_80px_-30px_rgba(11,26,51,0.45)]" />
+
+          {/* shoe — perfectly centered, scroll-driven 360° rotation */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            style={{ rotate: shoeRotate, willChange: "transform" }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            <img
+              src={SHOE_HERO}
+              alt="Featured shoe"
+              width={1000}
+              height={1000}
+              className="h-[70%] w-[70%] object-contain drop-shadow-[0_30px_30px_rgba(11,26,51,0.35)]"
+            />
+          </motion.div>
+
+          {/* orbiting chips */}
+          {heroChips.map((c, i) => {
+            const rad = (c.angle * Math.PI) / 180;
+            const r = 46; // % of container
+            const x = 50 + r * Math.cos(rad);
+            const y = 50 + r * Math.sin(rad);
             return (
               <motion.div
-                key={p.label}
-                initial={{ opacity: 0, y: 60, rotate: 0 }}
-                animate={{ opacity: 1, y: 0, rotate: p.rotate }}
-                transition={{ delay: 0.4 + i * 0.12, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -20, scale: 1.05, rotate: p.rotate * 0.6, zIndex: 50 }}
-                style={{
-                  left: `calc(50% + ${offset * 38}px - 130px)`,
-                  top: `calc(50% - 170px)`,
-                  background: p.color,
-                  zIndex: 10 + i,
-                }}
-                className="absolute h-[340px] w-[260px] rounded-[6px] bg-white p-3 pb-12 shadow-[0_25px_60px_-20px_rgba(11,26,51,0.45)]"
+                key={c.label}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1 + i * 0.18, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                style={{ left: `${x}%`, top: `${y}%` }}
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-navy shadow-[0_15px_30px_-10px_rgba(11,26,51,0.3)] ring-1 ring-navy/5"
               >
-                <div className="relative h-full w-full overflow-hidden rounded-sm" style={{ background: p.color }}>
-                  <Image src={p.img} alt={p.label} fill sizes="260px" className="object-cover" />
-                </div>
-                <div className="absolute bottom-3 left-0 right-0 text-center text-[11px] font-bold uppercase tracking-[0.25em] text-navy/70">
-                  {p.label}
-                </div>
+                {c.label}
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 }
+
 
 /* -------------------- MARQUEE -------------------- */
 export function Marquee() {
@@ -187,21 +184,36 @@ export function Marquee() {
 }
 
 /* -------------------- FEATURED PINNED -------------------- */
+function useIsMobile() {
+  const [m, setM] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const fn = () => setM(mq.matches);
+    fn();
+    mq.addEventListener("change", fn);
+    return () => mq.removeEventListener("change", fn);
+  }, []);
+  return m;
+}
+
 export function FeaturedPinned() {
   const ref = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.7, 1.1, 0.95]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [-15, 15]);
-  const textY = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.92, 1, 0.98]);
+  const textY = useTransform(scrollYProgress, [0, 1], [80, -80]);
 
   return (
-    <section ref={ref} id="story" className="relative h-[260vh]">
+    <section ref={ref} id="story" className="relative h-[180vh]">
       <div className="sticky top-0 flex h-screen items-center overflow-hidden bg-gradient-to-b from-white to-[#EAF4FB]">
         <div className="mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
-          <motion.div style={{ scale, rotate }} className="relative mx-auto aspect-square w-full max-w-[560px]">
-            <Image src={SHOE_HERO} alt="Featured shoe" fill sizes="(max-width: 768px) 100vw, 560px" className="rounded-3xl object-cover shadow-[0_40px_80px_-30px_rgba(11,26,51,0.5)]" />
+          <motion.div
+            style={{ scale: isMobile ? 1 : scale, willChange: "transform", transform: "translateZ(0)" }}
+            className="relative mx-auto aspect-square w-full max-w-[560px]"
+          >
+            <img src={SHOE_HERO} alt="Featured shoe" width={1200} height={1200} className="h-full w-full rounded-3xl object-cover shadow-[0_40px_80px_-30px_rgba(11,26,51,0.5)]" />
           </motion.div>
-          <motion.div style={{ y: textY }}>
+          <motion.div style={{ y: isMobile ? 0 : textY }}>
             <span className="text-xs font-bold uppercase tracking-[0.3em] text-blue">Featured</span>
             <h2 className="mt-4 font-display text-5xl md:text-7xl font-extrabold leading-[0.95] text-navy">
               Engineered <br /> to <em className="font-display italic">move.</em>
@@ -209,10 +221,7 @@ export function FeaturedPinned() {
             <p className="mt-6 max-w-md text-lg text-navy/70">
               Cushioned soles. Breathable mesh. Hand-stitched detailing on every pair. Designed for the streets of Karachi, Lahore, and beyond.
             </p>
-            <Link href="#products" onClick={(e) => {
-              e.preventDefault();
-              document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
-            }} className="mt-8 inline-flex items-center gap-2 text-base font-semibold text-navy underline underline-offset-4 hover:text-blue transition-colors">
+            <Link href="/#products" className="mt-8 inline-flex items-center gap-2 text-base font-semibold text-navy underline underline-offset-4">
               Explore the collection <ArrowUpRight className="h-4 w-4" />
             </Link>
           </motion.div>
@@ -224,13 +233,13 @@ export function FeaturedPinned() {
 
 /* -------------------- HORIZONTAL SHOWCASE -------------------- */
 export function HorizontalShowcase({ products }: { products: Product[] }) {
+  const isMobile = useIsMobile();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
   const x = useTransform(scrollYProgress, [0, 1], ["0%", "-72%"]);
-  
-  // Use up to 5 actual products from Firebase for the horizontal showcase
-  const showcaseProducts = products.slice(0, 5);
-  // Fallbacks if db is empty or has < 5 products
+
+  // Preserve Firebase wiring
+  const showcaseProducts = products?.slice(0, 5) || [];
   const mockShowcase = [
     { img: SHOE_1, name: "Samba Pink", price: 3500, tag: "Court", id: "mock1" },
     { img: SHOE_2, name: "Air Navy", price: 5200, tag: "Lifestyle", id: "mock2" },
@@ -238,38 +247,69 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
     { img: SHOE_4, name: "Velocity Red", price: 6800, tag: "Runner", id: "mock4" },
     { img: SHOE_5, name: "Onyx Leather", price: 7500, tag: "Premium", id: "mock5" },
   ];
-
   const itemsToRender = showcaseProducts.length > 0 ? showcaseProducts : mockShowcase;
 
+  // Mobile Native Scroll-Snap
+  if (isMobile) {
+    return (
+      <section id="drop" className="bg-white py-20">
+        <div className="px-6">
+          <h3 className="mb-8 font-display text-4xl font-extrabold text-navy">
+            Drop. <span className="text-blue">06</span>
+          </h3>
+        </div>
+        <div
+          className="flex gap-5 overflow-x-auto pb-6 pl-6 pr-6 snap-x snap-mandatory"
+          style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none" }}
+        >
+          {itemsToRender.map((s: any) => {
+            const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
+            const isRealProduct = !!s.createdAt;
+            const linkHref = isRealProduct ? `/product/${s.id}` : '#';
+            return (
+              <Link href={linkHref} key={s.id} className="group relative h-[60vh] w-[78vw] shrink-0 snap-center overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_25px_50px_-20px_rgba(11,26,51,0.3)] block">
+                <img src={imageSrc} alt={s.name} loading="lazy" width={800} height={800} className="h-full w-full object-cover" />
+                <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/60 to-transparent text-white">
+                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-blue">{s.tag || s.category || "Style"}</span>
+                  <div className="mt-1 flex items-end justify-between">
+                    <h4 className="font-display text-xl font-bold">{s.name}</h4>
+                    <span className="font-semibold text-sm">Rs. {s.price?.toLocaleString()}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
+
+  // Desktop Scroll-Linked Animation
   return (
-    <section ref={ref} className="relative h-[400vh] bg-white">
+    <section id="drop" ref={ref} className="relative h-[400vh] bg-white">
       <div className="sticky top-0 flex h-screen items-center overflow-hidden">
         <div className="pl-6 md:pl-16">
           <h3 className="mb-10 font-display text-4xl md:text-6xl font-extrabold text-navy">
             Drop. <span className="text-blue">06</span>
           </h3>
         </div>
-        <motion.div style={{ x }} className="flex gap-8 pl-6 pr-[20vw]">
+        <motion.div style={{ x, willChange: "transform" }} className="flex gap-8 pl-6 pr-[20vw]">
           {itemsToRender.map((s: any) => {
-             const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
-             const isRealProduct = !!s.createdAt;
-             const linkHref = isRealProduct ? `/product/${s.id}` : '#';
-             return (
-              <Link
-                href={linkHref}
-                key={s.id}
-                className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block"
-              >
-                <Image src={imageSrc} alt={s.name} fill sizes="(max-width: 768px) 80vw, 480px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+            const imageSrc = s.images?.length ? s.images[0] : (s.img || SHOE_1);
+            const isRealProduct = !!s.createdAt;
+            const linkHref = isRealProduct ? `/product/${s.id}` : '#';
+            return (
+              <Link href={linkHref} key={s.id} className="group relative h-[60vh] w-[80vw] max-w-[480px] shrink-0 overflow-hidden rounded-3xl bg-gradient-to-br from-[#EAF4FB] to-white shadow-[0_30px_60px_-25px_rgba(11,26,51,0.3)] block">
+                <img src={imageSrc} alt={s.name} loading="lazy" width={800} height={800} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                 <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/60 to-transparent text-white">
                   <span className="text-xs font-bold uppercase tracking-[0.25em] text-blue">{s.tag || s.category || "Style"}</span>
                   <div className="mt-1 flex items-end justify-between">
                     <h4 className="font-display text-2xl font-bold">{s.name}</h4>
-                    <span className="font-semibold">Rs. {s.price.toLocaleString()}</span>
+                    <span className="font-semibold">Rs. {s.price?.toLocaleString()}</span>
                   </div>
                 </div>
               </Link>
-             );
+            );
           })}
         </motion.div>
       </div>
@@ -280,12 +320,12 @@ export function HorizontalShowcase({ products }: { products: Product[] }) {
 /* -------------------- CATEGORY PARALLAX -------------------- */
 export function CategoryParallax() {
   const cats = [
-    { name: "Classics", img: SHOE_3, color: "from-amber-100 to-white", link: "/?category=Classics" },
+    { name: "Casual", img: SHOE_3, color: "from-amber-100 to-white", link: "/?category=Casual" },
+    { name: "Formal", img: SHOE_2, color: "from-sky-100 to-white", link: "/?category=Formal" },
     { name: "Runners", img: SHOE_4, color: "from-red-100 to-white", link: "/?category=Runners" },
-    { name: "Court", img: SHOE_2, color: "from-sky-100 to-white", link: "/?category=Court" },
   ];
   return (
-    <section className="px-6 py-32 bg-background">
+    <section className="px-6 py-32">
       <div className="mx-auto max-w-7xl">
         <RevealText className="font-display text-4xl md:text-6xl font-extrabold text-navy">
           Pick your tribe.
@@ -301,24 +341,27 @@ export function CategoryParallax() {
 }
 
 function CategoryCard({ name, img, color, link, index }: { name: string; img: string; color: string; link: string; index: number }) {
+  const isMobile = useIsMobile();
   const ref = useRef<HTMLAnchorElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [60, -60]);
+  const y = useTransform(scrollYProgress, [0, 1], [40, -40]);
 
   return (
     <Link href={link} passHref legacyBehavior>
       <motion.a
         ref={ref}
-        initial={{ opacity: 0, y: 80 }}
+        initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.8, delay: index * 0.15, ease: [0.22, 1, 0.36, 1] }}
-        whileHover={{ y: -8 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.7, delay: index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+        whileHover={isMobile ? undefined : { y: -8 }}
         className={`group relative aspect-[3/4] overflow-hidden rounded-3xl bg-gradient-to-br ${color} shadow-[0_25px_60px_-25px_rgba(11,26,51,0.35)] block`}
       >
-        <motion.div style={{ y }} className="absolute inset-0 h-[120%] w-full">
-            <Image src={img} alt={name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
-        </motion.div>
+        <motion.img
+          style={isMobile ? undefined : { y, willChange: "transform" }}
+          src={img} alt={name} loading="lazy" width={800} height={800}
+          className={`absolute inset-0 w-full object-cover ${isMobile ? "h-full" : "h-[120%]"}`}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-transparent to-transparent pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-8 text-white">
           <h4 className="font-display text-4xl font-extrabold">{name}</h4>
@@ -328,6 +371,29 @@ function CategoryCard({ name, img, color, link, index }: { name: string; img: st
         </div>
       </motion.a>
     </Link>
+  );
+}
+
+/* -------------------- REVEAL TEXT -------------------- */
+export function RevealText({ children, className = "" }: { children: string; className?: string }) {
+  const words = children.split(" ");
+  const ref = useRef<HTMLHeadingElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-50px" });
+  return (
+    <h2 ref={ref} className={className}>
+      {words.map((w, i) => (
+        <span key={i} className="inline-block overflow-hidden align-bottom mr-[0.25em]">
+          <motion.span
+            initial={{ y: "110%" }}
+            animate={inView ? { y: 0 } : {}}
+            transition={{ duration: 0.8, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-block"
+          >
+            {w}
+          </motion.span>
+        </span>
+      ))}
+    </h2>
   );
 }
 
@@ -354,13 +420,16 @@ export function CtaBand() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.6 }}
-          className="mt-10 flex justify-center"
+          className="mt-10"
         >
-          <Link href="#products" onClick={(e) => {
-            e.preventDefault();
-            document.getElementById("products")?.scrollIntoView({ behavior: "smooth" });
+          <Link href="/#products" onClick={(e) => {
+            const elem = document.getElementById("products");
+            if (elem) {
+              e.preventDefault();
+              elem.scrollIntoView({ behavior: "smooth" });
+            }
           }}>
-            <MagneticButton className="inline-flex items-center justify-center gap-3 rounded-full bg-blue px-10 py-5 text-lg font-bold text-navy hover:brightness-110 transition-all">
+            <MagneticButton className="inline-flex items-center gap-3 rounded-full bg-blue px-10 py-5 text-lg font-bold text-navy hover:brightness-110 transition-all">
               Browse Collection <ArrowRight className="h-5 w-5" />
             </MagneticButton>
           </Link>
